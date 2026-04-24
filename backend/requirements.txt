@@ -1,0 +1,23 @@
+# Web Framework & Server
+fastapi[all]          # Include Pydantic, Starlette e Uvicorn
+uvicorn               # Il server ASGI per far girare l'app
+
+# Database & Migrations
+sqlmodel              # L'ORM (SQLAlchemy + Pydantic)
+psycopg2-binary       # Driver per connettersi a PostgreSQL
+alembic               # Gestione delle migrazioni (il tuo "db:migrate")
+
+# Sicurezza & Autenticazione
+python-jose[cryptography] # Gestione dei token JWT
+passlib[bcrypt]       # Hashing sicuro delle password (Bcrypt)
+
+# Utility
+python-dotenv         # Carica le variabili dal file .env
+httpx                 # Client HTTP (necessario per i test e utile per il Bot Telegram)
+python-multipart      # Necessario se ricevi dati da form (es. login standard)
+
+# Background Tasks (Opzionale ma consigliato per il Bot)
+apscheduler           # Per controllare ogni X minuti se hai preso le medicine
+
+# Tests
+pytest
