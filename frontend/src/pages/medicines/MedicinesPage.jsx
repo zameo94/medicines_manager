@@ -54,7 +54,6 @@ export default function MedicinesPage() {
         </div>
       )}
 
-      {/* Il Modale */}
       <MedicineModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 

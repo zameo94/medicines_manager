@@ -13,7 +13,6 @@ from sqlmodel import SQLModel
 from app.models.medicine import Medicine
 from app.models.medication_schedule import MedicationSchedule
 from app.models.medication_log import MedicationLog
-from app.core.config import settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -22,7 +21,6 @@ config = context.config
 db_url = os.getenv("DATABASE_URL")
 
 if db_url:
-    # SQLAlchemy richiede il driver +psycopg2 per Postgres
     if db_url.startswith("postgresql://") and "+psycopg2" not in db_url:
         db_url = db_url.replace("postgresql://", "postgresql+psycopg2://", 1)
     config.set_main_option("sqlalchemy.url", db_url)

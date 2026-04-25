@@ -13,10 +13,20 @@ def test_create_medicine(client):
     )
     data = response.json()
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_201_CREATED
     assert data["name"] == "Tachipirina"
     assert data["is_active"] is True
     assert "id" in data
+
+def test_create_medicine_invalid_name(client):
+    response = client.post(
+        "/medicines/",
+        json={
+            "name": "",
+            "description": "Empty name"
+        }
+    )
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 def test_index_medicines(client):
     client.post(
@@ -60,12 +70,8 @@ def test_read_medicines(client):
     assert data[0]["name"] == "Oki"
 
 def test_read_non_existent_medicine(client, session):
-    max_id = session.exec(select(func.max(Medicine.id))).one() or 0
-    non_existent_id = max_id + 1
-
-    response = client.get(
-        f"/medicines/{non_existent_id}"
-    )
+    non_existent_id = 9999
+    response = client.get(f"/medicines/{non_existent_id}")
     
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.json()["detail"] == "Medicine not found"
@@ -83,24 +89,21 @@ def test_update_medicine(client):
     response = client.put(
         f"/medicines/{medicine_id}",
         json={
-            "name": "Aspirina",
             "is_active": False
-            }
+        }
     )
     data = response.json()
 
     assert response.status_code == status.HTTP_200_OK
     assert data["is_active"] is False
+    assert data["name"] == "Aspirina"
 
-def test_update_non_existent_medicine(client, session):
-    max_id = session.exec(select(func.max(Medicine.id))).one() or 0
-    non_existent_id = max_id + 1
-
+def test_update_non_existent_medicine(client):
+    non_existent_id = 9999
     response = client.put(
         f"/medicines/{non_existent_id}",
         json={
-            "name": "Fake Medicine",
-            "is_active": False
+            "name": "Fake Medicine"
         }
     )
     
@@ -122,14 +125,59 @@ def test_delete_medicine(client):
     get_res = client.get(f"/medicines/{medicine_id}")
     assert get_res.status_code == status.HTTP_404_NOT_FOUND
 
-
-def test_delete_non_existent_medicine(client, session):
-    max_id = session.exec(select(func.max(Medicine.id))).one() or 0
-    non_existent_id = max_id + 1
-
-    response = client.delete(
-        f"/medicines/{non_existent_id}"
-    )
+def test_delete_non_existent_medicine(client):
+    non_existent_id = 9999
+    response = client.delete(f"/medicines/{non_existent_id}")
     
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.json()["detail"] == "Medicine not found"
+
+
+def test_create_medicine_db_error(client, mocker):
+    from sqlmodel import Session
+    mocker.patch.object(Session, "commit", side_effect=Exception("Connection lost"))
+    
+    response = client.post(
+        "/medicines/",
+        json={"name": "Error Test"}
+    )
+    
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Error while saving" in response.json()["detail"]
+
+def test_update_medicine_db_error(client, mocker):
+    created = client.post(
+        "/medicines/",
+        json={
+            "name": "Update Error Test"
+        }
+    ).json()
+    medicine_id = created["id"]
+    
+    from sqlmodel import Session
+    mocker.patch.object(Session, "commit", side_effect=Exception("Update failed"))
+    
+    response = client.put(
+        f"/medicines/{medicine_id}",
+        json={"name": "New Name"}
+    )
+    
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Error while updating" in response.json()["detail"]
+
+def test_delete_medicine_db_error(client, mocker):
+    created = client.post(
+        "/medicines/",
+        json={
+            "name": "Delete Error Test"
+        }
+    ).json()
+    medicine_id = created["id"]
+    
+    from sqlmodel import Session
+    mocker.patch.object(Session, "commit", side_effect=Exception("Delete failed"))
+    
+    response = client.delete(f"/medicines/{medicine_id}")
+    
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Error while deleting" in response.json()["detail"]

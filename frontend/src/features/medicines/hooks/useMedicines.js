@@ -48,7 +48,16 @@ export const useMedicines = () => {
       }
       await refresh();
     } catch (err) {
-      const message = err.response?.data?.detail || "Errore durante il salvataggio";
+      let message = "Errore durante il salvataggio";
+      if (err.response?.status === 422) {
+        // Estraiamo i messaggi di validazione di Pydantic
+        const details = err.response.data.detail;
+        if (Array.isArray(details)) {
+          message = details.map(d => `${d.loc[1]}: ${d.msg}`).join(", ");
+        }
+      } else {
+        message = err.response?.data?.detail || message;
+      }
       setSaveError(message);
       throw err;
     } finally {
@@ -59,9 +68,7 @@ export const useMedicines = () => {
   return { medicines, loading, isSaving, saveError, isDeleting, deleteError, remove, save, refresh };
 };
 
-/**
- * Hook per la gestione di una singola medicina
- */
+
 export const useMedicine = (id) => {
   const [medicine, setMedicine] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -98,7 +105,16 @@ export const useMedicine = (id) => {
       setMedicine(res.data);
       return res.data;
     } catch (err) {
-      const message = err.response?.data?.detail || "Errore durante il salvataggio";
+      let message = "Errore durante il salvataggio";
+      if (err.response?.status === 422) {
+        // Estraiamo i messaggi di validazione di Pydantic
+        const details = err.response.data.detail;
+        if (Array.isArray(details)) {
+          message = details.map(d => `${d.loc[1]}: ${d.msg}`).join(", ");
+        }
+      } else {
+        message = err.response?.data?.detail || message;
+      }
       setSaveError(message);
       throw err;
     } finally {

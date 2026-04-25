@@ -3,17 +3,18 @@ from typing import List, Optional
 from sqlmodel import SQLModel, Field, Relationship
 from datetime import datetime
 from sqlalchemy import Column, DateTime, func
+from app.schemas.medication_schedule import MedicationScheduleBase
 
-class MedicationSchedule(SQLModel, table=True):
+class MedicationSchedule(MedicationScheduleBase, table=True):
     __tablename__ = 'medication_schedules'
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    scheduled_time: time = Field(index=True)
-    medicine_id: int = Field(foreign_key='medicines.id', ondelete='CASCADE')
-    created_at: datetime = Field(
+    created_at: Optional[datetime] = Field(
+        default=None,
         sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     )
-    updated_at: datetime = Field(
+    updated_at: Optional[datetime] = Field(
+        default=None,
         sa_column=Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     )
     
