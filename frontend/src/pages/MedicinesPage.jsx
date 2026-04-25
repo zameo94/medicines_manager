@@ -5,7 +5,7 @@ import { MedicineItem } from '../features/medicines/components/MedicineItem';
 import { MedicineModal } from '../features/medicines/components/MedicineModal';
 
 export default function MedicinesPage() {
-  const { medicines, loading, remove, save } = useMedicines();
+  const { medicines, loading, isSaving, saveError, isDeleting, deleteError, remove, save } = useMedicines();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -23,6 +23,18 @@ export default function MedicinesPage() {
         </button>
       </header>
 
+      {saveError && (
+        <div className="mb-6 bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm font-medium animate-in fade-in slide-in-from-top-1">
+          ⚠️ {saveError}
+        </div>
+      )}
+
+      {deleteError && (
+        <div className="mb-6 bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm font-medium animate-in fade-in slide-in-from-top-1">
+          ⚠️ {deleteError}
+        </div>
+      )}
+
       {loading ? (
         <div className="animate-pulse space-y-4">
           {[1,2,3].map(i => <div key={i} className="h-20 bg-slate-100 rounded-2xl" />)}
@@ -34,7 +46,9 @@ export default function MedicinesPage() {
               key={m.id} 
               medicine={m} 
               onUpdate={(id, data) => save(data, id)} 
-              onDelete={remove} 
+              onDelete={remove}
+              isSaving={isSaving}
+              isDeleting={isDeleting}
             />
           ))}
         </div>

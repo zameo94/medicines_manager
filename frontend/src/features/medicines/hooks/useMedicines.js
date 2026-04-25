@@ -4,6 +4,10 @@ import { medicineService } from '../../../services/api';
 export const useMedicines = () => {
   const [medicines, setMedicines] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
 
   const refresh = async () => {
     try {
@@ -19,18 +23,39 @@ export const useMedicines = () => {
   useEffect(() => { refresh(); }, []);
 
   const remove = async (id) => {
-    await medicineService.delete(id);
-    refresh();
+    try {
+      setIsDeleting(true);
+      setDeleteError(null);
+      await medicineService.delete(id);
+      await refresh();
+    } catch (err) {
+      const message = err.response?.data?.detail || "Errore durante l'eliminazione";
+      setDeleteError(message);
+      console.error("Errore eliminazione:", err);
+      throw err;
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const save = async (data, id = null) => {
-    if (id) {
-      await medicineService.update(id, data);
-    } else {
-      await medicineService.create(data);
+    try {
+      setIsSaving(true);
+      setSaveError(null);
+      if (id) {
+        await medicineService.update(id, data);
+      } else {
+        await medicineService.create(data);
+      }
+      await refresh();
+    } catch (err) {
+      const message = err.response?.data?.detail || "Errore durante il salvataggio";
+      setSaveError(message);
+      throw err;
+    } finally {
+      setIsSaving(false);
     }
-    refresh();
   };
 
-  return { medicines, loading, remove, save };
+  return { medicines, loading, isSaving, saveError, isDeleting, deleteError, remove, save };
 };

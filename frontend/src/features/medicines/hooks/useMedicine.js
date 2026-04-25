@@ -25,16 +25,40 @@ export const useMedicine = (id) => {
     fetchMedicine();
   }, [id]);
 
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
+
   const update = async (data) => {
     try {
+      setIsSaving(true);
+      setSaveError(null);
       const res = await medicineService.update(id, data);
       setMedicine(res.data);
       return res.data;
     } catch (err) {
-      console.error("Errore update medicina:", err);
+      const message = err.response?.data?.detail || "Errore durante il salvataggio";
+      setSaveError(message);
       throw err;
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  return { medicine, loading, error, update, refresh: fetchMedicine };
+  const remove = async () => {
+    try {
+      setIsDeleting(true);
+      setDeleteError(null);
+      await medicineService.delete(id);
+    } catch (err) {
+      const message = err.response?.data?.detail || "Errore durante l'eliminazione";
+      setDeleteError(message);
+      throw err;
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  return { medicine, loading, error, update, remove, isSaving, saveError, isDeleting, deleteError, refresh: fetchMedicine };
 };

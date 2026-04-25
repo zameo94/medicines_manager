@@ -55,11 +55,15 @@ def root(session: Session = Depends(get_session)):
 
 @app.post("/medicines/", response_model=Medicine)
 def create_medicine(medicine: Medicine, session: Session = Depends(get_session)):
-    session.add(medicine)
-    session.commit()
-    session.refresh(medicine)
+    try:
+        session.add(medicine)
+        session.commit()
+        session.refresh(medicine)
 
-    return medicine
+        return medicine
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status=400, detail=f"Error while saving: {e}")
 
 @app.put("/medicines/{medicine_id}", response_model=Medicine)
 def update_medicine(medicine_id: int, medicine_data: Medicine, session: Session = Depends(get_session)):
@@ -68,16 +72,20 @@ def update_medicine(medicine_id: int, medicine_data: Medicine, session: Session 
     if not medicine:
         raise HTTPException(status_code=404, detail="Medicine not found")
     
-    new_data = medicine_data.model_dump(exclude_unset=True)
+    try:
+        new_data = medicine_data.model_dump(exclude_unset=True)
 
-    for key, value in new_data.items():
-        setattr(medicine, key, value)
+        for key, value in new_data.items():
+            setattr(medicine, key, value)
 
-    session.add(medicine)
-    session.commit()
-    session.refresh(medicine)
-    
-    return medicine
+        session.add(medicine)
+        session.commit()
+        session.refresh(medicine)
+        
+        return medicine
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status=400, detail=f"Error while updating: {e}")
 
 @app.get("/medicines/", response_model=List[Medicine])
 def index_medicines(session: Session = Depends(get_session)):
@@ -101,7 +109,11 @@ def delete_medicine(medicine_id: int, session: Session = Depends(get_session)):
     if not medicine:
         raise HTTPException(status_code=404, detail="Medicine not found")
     
-    session.delete(medicine)
-    session.commit()
-    
-    return {"status": 200, "message": f"Medicine with ID {medicine_id} succesfully deleted"}
+    try:
+        session.delete(medicine)
+        session.commit()
+        
+        return {"status": 200, "message": f"Medicine with ID {medicine_id} succesfully deleted"}
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status=400, detail=f"Error while deleting: {e}")

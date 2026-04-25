@@ -5,7 +5,7 @@ import { MedicineForm } from '../features/medicines/components/MedicineForm';
 export default function MedicineDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { medicine, loading, error, update } = useMedicine(id);
+  const { medicine, loading, error, update, remove, isSaving, saveError, isDeleting, deleteError } = useMedicine(id);
 
   if (loading) return (
     <div className="max-w-2xl mx-auto p-10 text-center text-slate-400 font-medium animate-pulse">
@@ -23,9 +23,18 @@ export default function MedicineDetailPage() {
   const handleSave = async (data) => {
     try {
       await update(data);
-      navigate('/medicines');
+      navigate(`/medicines/${id}`, { replace: true });
     } catch (err) {
-      alert("Errore durante il salvataggio");
+      // Error handled through hook
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await remove();
+      navigate('/medicines', { replace: true });
+    } catch (err) {
+      // Error handled through hook
     }
   };
 
@@ -47,7 +56,11 @@ export default function MedicineDetailPage() {
           medicine={medicine} 
           isEditing={isInitiallyEditing}
           onSave={handleSave}
+          onDelete={handleDelete}
           onCancel={() => navigate(`/medicines/${id}`, { replace: true })}
+          isSaving={isSaving}
+          isDeleting={isDeleting}
+          error={saveError || deleteError}
         />
       </div>
     </div>
