@@ -1,6 +1,6 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useMedicine } from '../features/medicines/hooks/useMedicine';
-import { MedicineForm } from '../features/medicines/components/MedicineForm';
+import { useMedicine } from '../../features/medicines/hooks/useMedicines';
+import { MedicineForm } from '../../features/medicines/components/MedicineForm';
 
 export default function MedicineDetailPage() {
   const { id } = useParams();

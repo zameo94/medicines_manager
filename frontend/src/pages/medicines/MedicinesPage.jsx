@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useMedicines } from '../features/medicines/hooks/useMedicines';
-import { MedicineItem } from '../features/medicines/components/MedicineItem';
-import { MedicineModal } from '../features/medicines/components/MedicineModal';
+import { useMedicines } from '../../features/medicines/hooks/useMedicines';
+import { MedicineItem } from '../../features/medicines/components/MedicineItem';
+import { MedicineModal } from '../../features/medicines/components/MedicineModal';
 
 export default function MedicinesPage() {
   const { medicines, loading, isSaving, saveError, isDeleting, deleteError, remove, save } = useMedicines();
