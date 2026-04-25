@@ -1,4 +1,4 @@
-import { MedicineForm } from './MedicineForm';
+import { MedicineCreateForm } from './MedicineCreateForm';
 
 export const MedicineModal = ({ isOpen, onClose, onSubmit }) => {
   if (!isOpen) return null;
@@ -11,7 +11,7 @@ export const MedicineModal = ({ isOpen, onClose, onSubmit }) => {
             <h2 className="text-2xl font-bold text-slate-800">Nuova Medicina</h2>
             <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
           </div>
-          <MedicineForm 
+          <MedicineCreateForm 
             onSubmit={(data) => { onSubmit(data); onClose(); }} 
             onCancel={onClose} 
           />

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export const MedicineItem = ({ medicine, onUpdate, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -71,25 +72,36 @@ export const MedicineItem = ({ medicine, onUpdate, onDelete }) => {
     }`}>
       <div className="flex-1 pr-4">
         <div className="flex items-center gap-2">
-          <h3 className={`font-bold text-lg ${medicine.is_active ? 'text-slate-800' : 'text-slate-500'}`}>
+          <Link 
+            to={`/medicines/${medicine.id}`}
+            className={`font-bold text-lg hover:text-blue-600 transition-colors ${medicine.is_active ? 'text-slate-800' : 'text-slate-500'}`}
+          >
             {medicine.name}
-          </h3>
+          </Link>
           {!medicine.is_active && (
             <span className="text-[10px] uppercase font-black px-2 py-0.5 bg-slate-200 text-slate-500 rounded-full tracking-tighter">Inattiva</span>
           )}
         </div>
-        <p className="text-slate-500 text-sm mt-1">{medicine.description || 'Nessuna descrizione'}</p>
+        <p className="text-slate-500 text-sm mt-1 whitespace-pre-wrap line-clamp-2">{medicine.description || 'Nessuna descrizione'}</p>
       </div>
-      
       <div className="flex items-center gap-2 ml-auto">
         {!showConfirm && (
-          <button 
-            onClick={() => setIsEditing(true)} 
-            className="p-2.5 rounded-xl text-blue-500 hover:bg-blue-50 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
-            title="Modifica"
-          >
-            <PencilIcon />
-          </button>
+          <>
+            <button 
+              onClick={() => setIsEditing(true)} 
+              className="p-2.5 rounded-xl text-blue-500 hover:bg-blue-50 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
+              title="Modifica veloce"
+            >
+              <FastPencilIcon />
+            </button>
+            <Link 
+              to={`/medicines/${medicine.id}?edit=true`}
+              className="p-2.5 rounded-xl text-blue-500 hover:bg-blue-50 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
+              title="Dettagli e Modifica"
+            >
+              <PencilIcon />
+            </Link>
+          </>
         )}
 
         <button 
@@ -110,6 +122,13 @@ export const MedicineItem = ({ medicine, onUpdate, onDelete }) => {
 };
 
 // --- ICONE SVG (Outline Style) ---
+
+const FastPencilIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 17h2m-2-4h4m-4-4h2" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+  </svg>
+);
 
 const PencilIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
