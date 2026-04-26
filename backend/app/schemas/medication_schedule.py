@@ -16,5 +16,4 @@ class MedicationScheduleUpdate(MedicationScheduleBase):
 
 class MedicationScheduleRead(MedicationScheduleBase):
     id: int
-    scheduled_time: time
     medicine: MedicineRead

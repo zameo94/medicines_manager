@@ -9,15 +9,15 @@ export default function SchedulesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <header className="flex justify-between items-end mb-10">
+    <div className="max-w-4xl mx-auto p-4 md:p-6">
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-8 md:mb-10">
         <div>
           <Link to="/" className="text-slate-400 hover:text-slate-600 mb-2 block text-sm font-medium">← Dashboard</Link>
-          <h1 className="text-4xl font-black text-slate-900">Programmazione</h1>
+          <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Programmazione</h1>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 hover:scale-105 transition-all"
+          className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3.5 rounded-2xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all text-sm md:text-base"
         >
           + Nuovo Orario
         </button>

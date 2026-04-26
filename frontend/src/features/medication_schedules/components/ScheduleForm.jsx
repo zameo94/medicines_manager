@@ -60,11 +60,11 @@ export const ScheduleForm = ({
 
   if (!isEditing && schedule) {
     return (
-      <div className="p-8 space-y-8">
+      <div className="p-6 md:p-8 space-y-8">
         <div className="grid gap-6">
-          <div className="flex items-center gap-4">
-            <div className="bg-blue-50 text-blue-600 p-4 rounded-2xl">
-              <span className="text-2xl font-black">{formData.scheduled_time}</span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="bg-blue-50 text-blue-600 p-4 rounded-2xl w-fit">
+              <span className="text-3xl font-black">{formData.scheduled_time}</span>
             </div>
             <div>
               <h4 className="text-xs uppercase font-black text-slate-400 tracking-widest mb-1">Medicina</h4>
@@ -72,7 +72,7 @@ export const ScheduleForm = ({
                 {schedule.medicine?.name ? (
                   <Link 
                     to={`/medicines/${schedule.medicine.id}`} 
-                    className="text-slate-700 hover:text-blue-600 transition-colors"
+                    className="text-blue-600 hover:underline"
                   >
                     {schedule.medicine.name}
                   </Link>
@@ -84,11 +84,9 @@ export const ScheduleForm = ({
           </div>
         </div>
 
-        <div className="pt-6 border-t border-slate-50 flex justify-between items-center">
+        <div className="pt-6 border-t border-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex flex-col">
-            <p className="text-xs text-slate-400">
-              ID Programmazione: {schedule.id}
-            </p>
+            <p className="text-xs text-slate-400">ID: {schedule.id}</p>
             {onDelete && (
               <button 
                 onClick={handleDelete}
@@ -101,7 +99,7 @@ export const ScheduleForm = ({
           </div>
           <button 
             onClick={() => setIsEditing(true)}
-            className="text-blue-600 font-bold text-sm hover:underline"
+            className="w-full sm:w-auto bg-slate-900 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-slate-800 transition-all"
           >
             Modifica Orario
           </button>
@@ -111,9 +109,9 @@ export const ScheduleForm = ({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="p-8 space-y-6">
+    <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6">
       {error && (
-        <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm font-medium animate-in fade-in slide-in-from-top-1">
+        <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm font-medium">
           ⚠️ {error}
         </div>
       )}
@@ -122,7 +120,7 @@ export const ScheduleForm = ({
         <div>
           <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">Medicina</label>
           <select 
-            className="w-full p-4 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition-all disabled:opacity-50 appearance-none font-bold text-slate-700"
+            className="w-full p-4 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition-all font-bold text-slate-700"
             value={formData.medicine_id}
             onChange={e => setFormData({...formData, medicine_id: e.target.value})}
             required
@@ -140,13 +138,13 @@ export const ScheduleForm = ({
           <input 
             type="text"
             placeholder="HH:MM (es. 17:23)"
-            className="w-full p-4 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition-all disabled:opacity-50 font-mono font-bold text-slate-700"
+            className="w-full p-4 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition-all font-mono font-bold text-slate-700"
             value={formData.scheduled_time}
             onChange={e => setFormData({...formData, scheduled_time: e.target.value})}
             required
             disabled={isSaving}
           />
-          <p className="text-[10px] text-slate-400 mt-2 ml-1 uppercase font-bold tracking-tight italic">Inserisci l'orario nel formato HH:MM o HH:MM:SS</p>
+          <p className="text-[10px] text-slate-400 mt-2 ml-1 uppercase font-bold tracking-tight italic">Formato HH:MM o HH:MM:SS</p>
         </div>
       </div>
 
@@ -155,9 +153,7 @@ export const ScheduleForm = ({
           <button 
             type="submit" 
             disabled={isSaving || isDeleting || activeMedicines.length === 0}
-            className={`flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold transition shadow-lg shadow-blue-200 ${
-              isSaving ? 'opacity-70 cursor-not-allowed' : 'hover:bg-blue-700'
-            }`}
+            className="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200 disabled:opacity-50"
           >
             {isSaving ? 'Salvataggio...' : 'Salva Programmazione'}
           </button>
@@ -174,18 +170,14 @@ export const ScheduleForm = ({
           </button>
         </div>
         
-        {onDelete && schedule && (
+        {onDelete && schedule && !isEditing && (
           <button 
             type="button"
             onClick={handleDelete}
             disabled={isSaving || isDeleting}
-            className={`w-full py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all border-2 ${
-              showDeleteConfirm 
-                ? 'bg-red-600 border-red-600 text-white scale-[1.02] shadow-lg shadow-red-100' 
-                : 'bg-white border-red-50 text-red-400 hover:border-red-100 hover:text-red-500'
-            } disabled:opacity-50`}
+            className="w-full py-3 rounded-2xl text-xs font-black uppercase tracking-widest bg-red-50 text-red-500 hover:bg-red-100 transition-all"
           >
-            {isDeleting ? 'Eliminazione in corso...' : showDeleteConfirm ? '⚠️ Sicuro? Clicca di nuovo per eliminare' : 'Elimina Orario'}
+            Elimina Orario
           </button>
         )}
       </div>

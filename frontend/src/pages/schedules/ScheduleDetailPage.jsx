@@ -1,11 +1,13 @@
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useMedicationSchedule } from '../../features/medication_schedules/hooks/useMedicationSchedules';
 import { ScheduleForm } from '../../features/medication_schedules/components/ScheduleForm';
 
 export default function ScheduleDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { schedule, loading, error, update, remove, isSaving, saveError, isDeleting, deleteError } = useMedicationSchedule(id);
+  const isInitiallyEditing = new URLSearchParams(location.search).get('edit') === 'true';
 
   if (loading) return (
     <div className="max-w-2xl mx-auto p-10 text-center text-slate-400 font-medium animate-pulse">
@@ -39,7 +41,7 @@ export default function ScheduleDetailPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
+    <div className="max-w-2xl mx-auto p-4 md:p-6">
       <header className="mb-8">
         <Link to="/medication-schedules" className="text-slate-400 hover:text-slate-600 mb-2 block text-sm font-medium">
           ← Torna alla programmazione
@@ -52,6 +54,7 @@ export default function ScheduleDetailPage() {
       <div className="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-100/50 overflow-hidden">
         <ScheduleForm 
           schedule={schedule} 
+          isEditing={isInitiallyEditing}
           onSave={handleSave}
           onDelete={handleDelete}
           onCancel={() => navigate(`/medication-schedules/${id}`, { replace: true })}
