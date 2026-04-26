@@ -9,8 +9,8 @@ router = APIRouter()
 
 @router.get("/", response_model=List[MedicationScheduleRead])
 def index_medication_schedule(session: Session = Depends(get_session)):
-    medication_schedule = session.exec(select(MedicationSchedule)).all()
-    return medication_schedule
+    medication_schedules = session.exec(select(MedicationSchedule)).all()
+    return medication_schedules
 
 @router.get("/{medication_schedule_id}", response_model=MedicationScheduleRead)
 def show_medicine(medication_schedule_id: int, session: Session = Depends(get_session)):
