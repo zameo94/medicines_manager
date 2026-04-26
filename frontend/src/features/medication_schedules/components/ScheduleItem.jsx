@@ -1,37 +1,51 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { medicineService } from '../../../services/api';
 
-export const MedicineItem = ({ medicine, onUpdate, onDelete, isSaving = false, isDeleting = false }) => {
+export const ScheduleItem = ({ schedule, onUpdate, onDelete, isSaving = false, isDeleting = false }) => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [activeMedicines, setActiveMedicines] = useState([]);
   const [editData, setEditData] = useState({ 
-    name: medicine.name, 
-    description: medicine.description,
-    is_active: medicine.is_active 
+    scheduled_time: schedule.scheduled_time.slice(0, 5), 
+    medicine_id: schedule.medicine_id
   });
 
   const handleCardClick = () => {
     if (!isEditing) {
-      navigate(`/medicines/${medicine.id}`);
+      navigate(`/medication-schedules/${schedule.id}`);
     }
   };
 
+  useEffect(() => {
+    if (isEditing) {
+      const fetchMedicines = async () => {
+        try {
+          const res = await medicineService.getActive();
+          setActiveMedicines(res.data);
+        } catch (err) {
+          console.error("Error fetching active medicines", err);
+        }
+      };
+      fetchMedicines();
+    }
+  }, [isEditing]);
+
   const handleSave = async (e) => {
     e.stopPropagation();
-    if (!editData.name.trim()) return;
     try {
-      await onUpdate(medicine.id, editData);
+      await onUpdate(schedule.id, editData);
       setIsEditing(false);
     } catch (err) {
-      // Error handled in the superior page
+      // Error handled in superior page
     }
   };
 
   const handleDeleteClick = (e) => {
     e.stopPropagation();
     if (showConfirm) {
-      onDelete(medicine.id);
+      onDelete(schedule.id);
       setShowConfirm(false);
     } else {
       setShowConfirm(true);
@@ -47,51 +61,44 @@ export const MedicineItem = ({ medicine, onUpdate, onDelete, isSaving = false, i
   if (isEditing) {
     return (
       <div className={`p-4 rounded-2xl border-2 animate-in fade-in duration-150 ${isSaving ? 'bg-slate-50 border-slate-200 opacity-70' : 'bg-blue-50 border-blue-200'}`}>
-        <div className="flex flex-col gap-2 mb-3">
+        <div className="flex flex-wrap gap-2 items-center mb-3">
           <input 
-            className="w-full p-2.5 rounded-xl border border-blue-300 outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:opacity-50 text-sm"
-            value={editData.name}
-            onChange={e => setEditData({...editData, name: e.target.value})}
-            placeholder="Nome medicina"
+            type="text"
+            placeholder="HH:MM"
+            className="w-20 p-2 rounded-xl border border-blue-300 outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:opacity-50 font-mono font-bold text-center text-sm"
+            value={editData.scheduled_time}
+            onChange={e => setEditData({...editData, scheduled_time: e.target.value})}
             disabled={isSaving}
             onClick={e => e.stopPropagation()}
           />
-          <input 
-            className="w-full p-2.5 rounded-xl border border-blue-300 outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:opacity-50 text-sm"
-            value={editData.description}
-            onChange={e => setEditData({...editData, description: e.target.value})}
-            placeholder="Descrizione"
+          <select 
+            className="flex-1 min-w-[120px] p-2 rounded-xl border border-blue-300 outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:opacity-50 font-bold text-slate-700 text-sm"
+            value={editData.medicine_id}
+            onChange={e => setEditData({...editData, medicine_id: e.target.value})}
+            required
             disabled={isSaving}
             onClick={e => e.stopPropagation()}
-          />
+          >
+            {activeMedicines.map(m => (
+              <option key={m.id} value={m.id}>{m.name}</option>
+            ))}
+          </select>
         </div>
-        <div className="flex justify-between items-center">
-          <label className={`flex items-center gap-2 ${isSaving ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`} onClick={e => e.stopPropagation()}>
-            <input 
-              type="checkbox"
-              className="w-5 h-5 text-blue-600 rounded border-blue-300 focus:ring-blue-500"
-              checked={editData.is_active}
-              onChange={e => setEditData({...editData, is_active: e.target.checked})}
-              disabled={isSaving}
-            />
-            <span className="text-xs font-semibold text-blue-800">Attiva</span>
-          </label>
-          <div className="flex gap-2">
-            <button 
-              onClick={handleSave} 
-              disabled={isSaving}
-              className="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold text-xs hover:bg-blue-700 transition disabled:opacity-50"
-            >
-              {isSaving ? '...' : 'Salva'}
-            </button>
-            <button 
-              onClick={(e) => { e.stopPropagation(); setIsEditing(false); }} 
-              disabled={isSaving}
-              className="text-slate-500 text-xs font-medium hover:text-slate-800 disabled:opacity-50 px-2"
-            >
-              Annulla
-            </button>
-          </div>
+        <div className="flex justify-end gap-2">
+          <button 
+            onClick={handleSave} 
+            disabled={isSaving}
+            className="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold text-xs hover:bg-blue-700 transition disabled:opacity-50"
+          >
+            {isSaving ? '...' : 'Salva'}
+          </button>
+          <button 
+            onClick={(e) => { e.stopPropagation(); setIsEditing(false); }} 
+            disabled={isSaving}
+            className="text-slate-500 text-xs font-medium hover:text-slate-800 disabled:opacity-50 px-2"
+          >
+            Annulla
+          </button>
         </div>
       </div>
     );
@@ -100,24 +107,31 @@ export const MedicineItem = ({ medicine, onUpdate, onDelete, isSaving = false, i
   return (
     <div 
       onClick={handleCardClick}
-      className={`p-4 rounded-2xl border flex justify-between items-center group transition-all duration-200 cursor-pointer overflow-hidden ${
-        medicine.is_active 
-          ? 'bg-white border-slate-100 shadow-sm hover:border-blue-200 hover:shadow-md active:scale-[0.98]' 
-          : 'bg-slate-50/50 border-slate-200 opacity-70'
-      }`}
+      className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center group transition-all cursor-pointer hover:border-blue-200 hover:shadow-md active:scale-[0.98] overflow-hidden"
     >
-      <div className="flex-1 min-w-0 pr-2">
+      <div className="flex-1 min-w-0 flex items-center gap-3">
         <div className="flex items-center gap-2 min-w-0">
-          <span className={`font-bold text-base truncate ${medicine.is_active ? 'text-slate-800' : 'text-slate-500'}`}>
-            {medicine.name}
+          <span className="font-black text-lg text-slate-900 shrink-0">
+            {schedule.scheduled_time.slice(0, 5)}
           </span>
-          {!medicine.is_active && (
-            <span className="shrink-0 text-[8px] uppercase font-black px-1.5 py-0.5 bg-slate-200 text-slate-500 rounded-full tracking-tighter">OFF</span>
+          <span className="text-slate-300 font-light shrink-0">|</span>
+          {schedule.medicine ? (
+            <Link 
+              to={`/medicines/${schedule.medicine.id}`} 
+              onClick={e => e.stopPropagation()}
+              className="font-bold text-blue-600 truncate text-base hover:underline"
+            >
+              {schedule.medicine.name}
+            </Link>
+          ) : (
+            <span className="font-bold text-slate-400 truncate text-base italic">
+              Medicina non trovata
+            </span>
           )}
         </div>
-        <p className="text-slate-500 text-xs mt-0.5 truncate">{medicine.description || 'Nessuna descrizione'}</p>
       </div>
-      <div className="flex items-center gap-1 shrink-0 ml-auto">
+
+      <div className="flex items-center gap-1 ml-2 shrink-0">
         {!showConfirm && (
           <>
             <button 
@@ -128,20 +142,19 @@ export const MedicineItem = ({ medicine, onUpdate, onDelete, isSaving = false, i
               <FastPencilIcon />
             </button>
             <Link 
-              to={`/medicines/${medicine.id}?edit=true`}
+              to={`/medication-schedules/${schedule.id}?edit=true`}
               onClick={e => e.stopPropagation()}
-              className="p-2 rounded-xl text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
-              title="Dettagli"
+              className="hidden md:flex p-2.5 rounded-xl text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
+              title="Dettagli e Modifica"
             >
               <PencilIcon />
             </Link>
           </>
         )}
-
         <button 
           onClick={handleDeleteClick} 
           disabled={isDeleting}
-          className={`flex items-center gap-1.5 p-2 rounded-xl transition-all duration-300 ${
+          className={`flex items-center gap-2 p-2 rounded-xl transition-all duration-300 ${
             showConfirm 
               ? 'bg-red-600 text-white px-3 ring-4 ring-red-100 scale-105 shadow-lg' 
               : 'text-red-500 hover:bg-red-50 opacity-100 md:opacity-0 md:group-hover:opacity-100'

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { medicineService } from '../../../services/api';
+import { scheduleService } from '../../../services/api';
 
 const parseBackendError = (err, fallbackMessage) => {
   const responseData = err.response?.data;
@@ -16,9 +16,10 @@ const parseBackendError = (err, fallbackMessage) => {
   return responseData.message || fallbackMessage;
 };
 
-export const useMedicines = () => {
-  const [medicines, setMedicines] = useState([]);
+export const useMedicationSchedules = () => {
+  const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -26,22 +27,27 @@ export const useMedicines = () => {
 
   const refresh = useCallback(async () => {
     try {
-      const res = await medicineService.getAll();
-      setMedicines(res.data);
+      setLoading(true);
+      const res = await scheduleService.getAll();
+      setSchedules(res.data);
+      setError(null);
     } catch (err) {
-      console.error("Errore fetch lista:", err);
+      console.error("Error fetching schedules:", err);
+      setError("Failed to load schedules");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
   const remove = async (id) => {
     try {
       setIsDeleting(true);
       setDeleteError(null);
-      await medicineService.delete(id);
+      await scheduleService.delete(id);
       await refresh();
     } catch (err) {
       setDeleteError(parseBackendError(err, "Errore durante l'eliminazione"));
@@ -56,9 +62,9 @@ export const useMedicines = () => {
       setIsSaving(true);
       setSaveError(null);
       if (id) {
-        await medicineService.update(id, data);
+        await scheduleService.update(id, data);
       } else {
-        await medicineService.create(data);
+        await scheduleService.create(data);
       }
       await refresh();
     } catch (err) {
@@ -69,11 +75,11 @@ export const useMedicines = () => {
     }
   };
 
-  return { medicines, loading, isSaving, saveError, isDeleting, deleteError, remove, save, refresh };
+  return { schedules, loading, error, isDeleting, deleteError, isSaving, saveError, remove, save, refresh };
 };
 
-export const useMedicine = (id) => {
-  const [medicine, setMedicine] = useState(null);
+export const useMedicationSchedule = (id) => {
+  const [schedule, setSchedule] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -81,14 +87,15 @@ export const useMedicine = (id) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
 
-  const fetchMedicine = useCallback(async () => {
+  const fetchSchedule = useCallback(async () => {
     if (!id) return;
     try {
       setLoading(true);
-      const res = await medicineService.getById(id);
-      setMedicine(res.data);
+      const res = await scheduleService.getById(id);
+      setSchedule(res.data);
       setError(null);
     } catch (err) {
+      console.error("Error fetching schedule:", err);
       setError(err);
     } finally {
       setLoading(false);
@@ -96,15 +103,15 @@ export const useMedicine = (id) => {
   }, [id]);
 
   useEffect(() => {
-    fetchMedicine();
-  }, [fetchMedicine]);
+    fetchSchedule();
+  }, [fetchSchedule]);
 
   const update = async (data) => {
     try {
       setIsSaving(true);
       setSaveError(null);
-      const res = await medicineService.update(id, data);
-      setMedicine(res.data);
+      const res = await scheduleService.update(id, data);
+      setSchedule(res.data);
       return res.data;
     } catch (err) {
       setSaveError(parseBackendError(err, "Errore durante il salvataggio"));
@@ -118,7 +125,7 @@ export const useMedicine = (id) => {
     try {
       setIsDeleting(true);
       setDeleteError(null);
-      await medicineService.delete(id);
+      await scheduleService.delete(id);
     } catch (err) {
       setDeleteError(parseBackendError(err, "Errore durante l'eliminazione"));
       throw err;
@@ -127,5 +134,16 @@ export const useMedicine = (id) => {
     }
   };
 
-  return { medicine, loading, error, update, remove, isSaving, saveError, isDeleting, deleteError, refresh: fetchMedicine };
+  return { 
+    schedule, 
+    loading, 
+    error, 
+    update, 
+    remove, 
+    isSaving, 
+    saveError, 
+    isDeleting, 
+    deleteError, 
+    refresh: fetchSchedule 
+  };
 };

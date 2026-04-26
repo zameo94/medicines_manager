@@ -11,7 +11,7 @@ export default function Home() {
           <span className="text-4xl block mb-2">💊</span>
           <span className="font-bold text-xl">Medicine</span>
         </Link>
-        <Link to="/schedules" className="p-8 bg-emerald-600 text-white rounded-3xl shadow-xl hover:scale-105 transition-transform text-center">
+        <Link to="/medication-schedules" className="p-8 bg-emerald-600 text-white rounded-3xl shadow-xl hover:scale-105 transition-transform text-center">
           <span className="text-4xl block mb-2">⏰💊</span>
           <span className="font-bold text-xl">Orari</span>
         </Link>

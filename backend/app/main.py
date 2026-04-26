@@ -10,6 +10,8 @@ from app.models.medicine import Medicine
 from app.models.medication_schedule import MedicationSchedule
 from app.models.medication_log import MedicationLog
 from app.api.v1 import medicines
+from app.api.v1 import medication_schedules
+from app.api.v1 import medication_logs
 
 load_dotenv()
 
@@ -49,4 +51,18 @@ app.include_router(
     medicines.router, 
     prefix="/medicines", 
     tags=["Medicines"]
+)
+
+# Medication Schedules
+app.include_router(
+    medication_schedules.router, 
+    prefix="/medication-schedules", 
+    tags=["Medication Schedules"]
+)
+
+# Medication Logs
+app.include_router(
+    medication_logs.router, 
+    prefix="/medication-logs", 
+    tags=["Medication Logs"]
 )
