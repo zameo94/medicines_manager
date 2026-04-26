@@ -1,9 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { medicineService } from '../../../services/api';
+import { scheduleService } from '../../../services/api';
 
-export const useMedicines = () => {
-  const [medicines, setMedicines] = useState([]);
+/**
+ * Hook for managing the complete list of medication schedules
+ */
+export const useMedicationSchedules = () => {
+  const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -11,25 +15,38 @@ export const useMedicines = () => {
 
   const refresh = useCallback(async () => {
     try {
-      const res = await medicineService.getAll();
-      setMedicines(res.data);
+      setLoading(true);
+      const res = await scheduleService.getAll();
+      setSchedules(res.data);
+      setError(null);
     } catch (err) {
-      console.error("Errore fetch lista:", err);
+      console.error("Error fetching schedules:", err);
+      setError("Failed to load schedules");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
   const remove = async (id) => {
     try {
       setIsDeleting(true);
       setDeleteError(null);
-      await medicineService.delete(id);
+      await scheduleService.delete(id);
       await refresh();
     } catch (err) {
-      const message = err.response?.data?.detail || "Errore durante l'eliminazione";
+      let message = "Error while deleting schedule";
+      if (err.response?.status === 422) {
+        const details = err.response.data.detail;
+        if (Array.isArray(details)) {
+          message = details.map(d => `${d.loc[1]}: ${d.msg}`).join(", ");
+        }
+      } else {
+        message = err.response?.data?.detail || message;
+      }
       setDeleteError(message);
       throw err;
     } finally {
@@ -42,13 +59,13 @@ export const useMedicines = () => {
       setIsSaving(true);
       setSaveError(null);
       if (id) {
-        await medicineService.update(id, data);
+        await scheduleService.update(id, data);
       } else {
-        await medicineService.create(data);
+        await scheduleService.create(data);
       }
       await refresh();
     } catch (err) {
-      let message = "Errore durante il salvataggio";
+      let message = "Error while saving schedule";
       if (err.response?.status === 422) {
         const details = err.response.data.detail;
         if (Array.isArray(details)) {
@@ -64,12 +81,14 @@ export const useMedicines = () => {
     }
   };
 
-  return { medicines, loading, isSaving, saveError, isDeleting, deleteError, remove, save, refresh };
+  return { schedules, loading, error, isDeleting, deleteError, isSaving, saveError, remove, save, refresh };
 };
 
-
-export const useMedicine = (id) => {
-  const [medicine, setMedicine] = useState(null);
+/**
+ * Hook for managing a single medication schedule
+ */
+export const useMedicationSchedule = (id) => {
+  const [schedule, setSchedule] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -77,15 +96,15 @@ export const useMedicine = (id) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
 
-  const fetchMedicine = useCallback(async () => {
+  const fetchSchedule = useCallback(async () => {
     if (!id) return;
     try {
       setLoading(true);
-      const res = await medicineService.getById(id);
-      setMedicine(res.data);
+      const res = await scheduleService.getById(id);
+      setSchedule(res.data);
       setError(null);
     } catch (err) {
-      console.error("Errore fetch medicina:", err);
+      console.error("Error fetching schedule:", err);
       setError(err);
     } finally {
       setLoading(false);
@@ -93,20 +112,19 @@ export const useMedicine = (id) => {
   }, [id]);
 
   useEffect(() => {
-    fetchMedicine();
-  }, [fetchMedicine]);
+    fetchSchedule();
+  }, [fetchSchedule]);
 
   const update = async (data) => {
     try {
       setIsSaving(true);
       setSaveError(null);
-      const res = await medicineService.update(id, data);
-      setMedicine(res.data);
+      const res = await scheduleService.update(id, data);
+      setSchedule(res.data);
       return res.data;
     } catch (err) {
-      let message = "Errore durante il salvataggio";
+      let message = "Error while updating schedule";
       if (err.response?.status === 422) {
-        // Estraiamo i messaggi di validazione di Pydantic
         const details = err.response.data.detail;
         if (Array.isArray(details)) {
           message = details.map(d => `${d.loc[1]}: ${d.msg}`).join(", ");
@@ -125,9 +143,17 @@ export const useMedicine = (id) => {
     try {
       setIsDeleting(true);
       setDeleteError(null);
-      await medicineService.delete(id);
+      await scheduleService.delete(id);
     } catch (err) {
-      const message = err.response?.data?.detail || "Errore durante l'eliminazione";
+      let message = "Error while deleting schedule";
+      if (err.response?.status === 422) {
+        const details = err.response.data.detail;
+        if (Array.isArray(details)) {
+          message = details.map(d => `${d.loc[1]}: ${d.msg}`).join(", ");
+        }
+      } else {
+        message = err.response?.data?.detail || message;
+      }
       setDeleteError(message);
       throw err;
     } finally {
@@ -136,7 +162,7 @@ export const useMedicine = (id) => {
   };
 
   return { 
-    medicine, 
+    schedule, 
     loading, 
     error, 
     update, 
@@ -145,6 +171,6 @@ export const useMedicine = (id) => {
     saveError, 
     isDeleting, 
     deleteError, 
-    refresh: fetchMedicine 
+    refresh: fetchSchedule 
   };
 };

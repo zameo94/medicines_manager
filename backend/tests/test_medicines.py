@@ -181,3 +181,27 @@ def test_delete_medicine_db_error(client, mocker):
     
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert "Error while deleting" in response.json()["detail"]
+
+def test_get_active_medicines(client):
+    client.post(
+        "/medicines/",
+        json={
+            "name": "Active Med","is_active": True
+        }
+    )
+    client.post(
+        "/medicines/",
+        json={
+            "name": "Inactive Med","is_active": False
+        }
+    )
+    
+    response = client.get("/medicines/active")
+    data = response.json()
+    
+    assert response.status_code == status.HTTP_200_OK
+    names = [m["name"] for m in data]
+    assert "Active Med" in names
+    assert "Inactive Med" not in names
+    for m in data:
+        assert m["is_active"] is True

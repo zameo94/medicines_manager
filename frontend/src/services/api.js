@@ -6,10 +6,19 @@ const api = axios.create({
 
 export const medicineService = {
   getAll: () => api.get('/medicines/'),
+  getActive: () => api.get('/medicines/active'),
   getById: (id) => api.get(`/medicines/${id}`),
   create: (data) => api.post('/medicines/', data),
   update: (id, data) => api.put(`/medicines/${id}`, data),
   delete: (id) => api.delete(`/medicines/${id}`),
+};
+
+export const scheduleService = {
+  getAll: () => api.get('/medication-schedules/'),
+  getById: (id) => api.get(`/medication-schedules/${id}`),
+  create: (data) => api.post('/medication-schedules/', data),
+  update: (id, data) => api.put(`/medication-schedules/${id}`, data),
+  delete: (id) => api.delete(`/medication-schedules/${id}`),
 };
 
 export default api;

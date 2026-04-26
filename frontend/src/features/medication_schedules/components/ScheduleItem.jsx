@@ -1,37 +1,51 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { medicineService } from '../../../services/api';
 
-export const MedicineItem = ({ medicine, onUpdate, onDelete, isSaving = false, isDeleting = false }) => {
+export const ScheduleItem = ({ schedule, onUpdate, onDelete, isSaving = false, isDeleting = false }) => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [activeMedicines, setActiveMedicines] = useState([]);
   const [editData, setEditData] = useState({ 
-    name: medicine.name, 
-    description: medicine.description,
-    is_active: medicine.is_active 
+    scheduled_time: schedule.scheduled_time.slice(0, 5), 
+    medicine_id: schedule.medicine_id
   });
 
   const handleCardClick = () => {
     if (!isEditing) {
-      navigate(`/medicines/${medicine.id}`);
+      navigate(`/medication-schedules/${schedule.id}`);
     }
   };
 
+  useEffect(() => {
+    if (isEditing) {
+      const fetchMedicines = async () => {
+        try {
+          const res = await medicineService.getActive();
+          setActiveMedicines(res.data);
+        } catch (err) {
+          console.error("Error fetching active medicines", err);
+        }
+      };
+      fetchMedicines();
+    }
+  }, [isEditing]);
+
   const handleSave = async (e) => {
     e.stopPropagation();
-    if (!editData.name.trim()) return;
     try {
-      await onUpdate(medicine.id, editData);
+      await onUpdate(schedule.id, editData);
       setIsEditing(false);
     } catch (err) {
-      // Error handled in the superior page
+      // Error handled in superior page
     }
   };
 
   const handleDeleteClick = (e) => {
     e.stopPropagation();
     if (showConfirm) {
-      onDelete(medicine.id);
+      onDelete(schedule.id);
       setShowConfirm(false);
     } else {
       setShowConfirm(true);
@@ -49,49 +63,42 @@ export const MedicineItem = ({ medicine, onUpdate, onDelete, isSaving = false, i
       <div className={`p-4 rounded-2xl border-2 animate-in fade-in duration-150 ${isSaving ? 'bg-slate-50 border-slate-200 opacity-70' : 'bg-blue-50 border-blue-200'}`}>
         <div className="flex flex-wrap gap-3 items-center mb-3">
           <input 
-            className="flex-1 min-w-[150px] p-2.5 rounded-xl border border-blue-300 outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:opacity-50"
-            value={editData.name}
-            onChange={e => setEditData({...editData, name: e.target.value})}
-            placeholder="Nome medicina"
+            type="text"
+            placeholder="HH:MM"
+            className="w-24 p-2.5 rounded-xl border border-blue-300 outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:opacity-50 font-mono font-bold text-center"
+            value={editData.scheduled_time}
+            onChange={e => setEditData({...editData, scheduled_time: e.target.value})}
             disabled={isSaving}
             onClick={e => e.stopPropagation()}
           />
-          <input 
-            className="flex-1 min-w-[200px] p-2.5 rounded-xl border border-blue-300 outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:opacity-50"
-            value={editData.description}
-            onChange={e => setEditData({...editData, description: e.target.value})}
-            placeholder="Descrizione"
+          <select 
+            className="flex-1 min-w-[150px] p-2.5 rounded-xl border border-blue-300 outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:opacity-50 font-bold text-slate-700"
+            value={editData.medicine_id}
+            onChange={e => setEditData({...editData, medicine_id: e.target.value})}
+            required
             disabled={isSaving}
             onClick={e => e.stopPropagation()}
-          />
+          >
+            {activeMedicines.map(m => (
+              <option key={m.id} value={m.id}>{m.name}</option>
+            ))}
+          </select>
         </div>
-        <div className="flex justify-between items-center">
-          <label className={`flex items-center gap-2 ${isSaving ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`} onClick={e => e.stopPropagation()}>
-            <input 
-              type="checkbox"
-              className="w-5 h-5 text-blue-600 rounded border-blue-300 focus:ring-blue-500"
-              checked={editData.is_active}
-              onChange={e => setEditData({...editData, is_active: e.target.checked})}
-              disabled={isSaving}
-            />
-            <span className="text-sm font-semibold text-blue-800">Attiva</span>
-          </label>
-          <div className="flex gap-2">
-            <button 
-              onClick={handleSave} 
-              disabled={isSaving}
-              className="bg-blue-600 text-white px-5 py-2 rounded-xl font-bold text-sm hover:bg-blue-700 transition disabled:opacity-50"
-            >
-              {isSaving ? 'Salvataggio...' : 'Salva'}
-            </button>
-            <button 
-              onClick={(e) => { e.stopPropagation(); setIsEditing(false); }} 
-              disabled={isSaving}
-              className="text-slate-500 text-sm font-medium hover:text-slate-800 disabled:opacity-50 px-3"
-            >
-              Annulla
-            </button>
-          </div>
+        <div className="flex justify-end gap-2">
+          <button 
+            onClick={handleSave} 
+            disabled={isSaving}
+            className="bg-blue-600 text-white px-5 py-2 rounded-xl font-bold text-sm hover:bg-blue-700 transition disabled:opacity-50"
+          >
+            {isSaving ? 'Salvataggio...' : 'Salva'}
+          </button>
+          <button 
+            onClick={(e) => { e.stopPropagation(); setIsEditing(false); }} 
+            disabled={isSaving}
+            className="text-slate-500 text-sm font-medium hover:text-slate-800 disabled:opacity-50 px-3"
+          >
+            Annulla
+          </button>
         </div>
       </div>
     );
@@ -100,24 +107,30 @@ export const MedicineItem = ({ medicine, onUpdate, onDelete, isSaving = false, i
   return (
     <div 
       onClick={handleCardClick}
-      className={`p-5 rounded-2xl border flex justify-between items-center group transition-all duration-200 cursor-pointer ${
-        medicine.is_active 
-          ? 'bg-white border-slate-100 shadow-sm hover:border-blue-200 hover:shadow-md hover:scale-[1.01]' 
-          : 'bg-slate-50/50 border-slate-200 opacity-70 hover:opacity-100'
-      }`}
+      className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center group transition-all cursor-pointer hover:border-blue-200 hover:shadow-md hover:scale-[1.01]"
     >
-      <div className="flex-1 pr-4">
-        <div className="flex items-center gap-2">
-          <span className={`font-bold text-lg ${medicine.is_active ? 'text-slate-800' : 'text-slate-500'}`}>
-            {medicine.name}
-          </span>
-          {!medicine.is_active && (
-            <span className="text-[10px] uppercase font-black px-2 py-0.5 bg-slate-200 text-slate-500 rounded-full tracking-tighter">Inattiva</span>
-          )}
+      <div className="flex items-center gap-4">
+        <div className="bg-blue-50 text-blue-600 p-3 rounded-xl">
+          <ClockIcon />
         </div>
-        <p className="text-slate-500 text-sm mt-1 whitespace-pre-wrap line-clamp-2">{medicine.description || 'Nessuna descrizione'}</p>
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="font-black text-xl text-slate-900">
+              {schedule.scheduled_time.slice(0, 5)}
+            </span>
+            <span className="text-slate-300 font-light">|</span>
+            <Link 
+              to={`/medicines/${schedule.medicine?.id}`} 
+              onClick={e => e.stopPropagation()}
+              className="font-bold text-lg text-slate-700 hover:text-blue-600 transition-colors"
+            >
+              {schedule.medicine?.name || 'Medicina non trovata'}
+            </Link>
+          </div>
+        </div>
       </div>
-      <div className="flex items-center gap-2 ml-auto">
+
+      <div className="flex items-center gap-2">
         {!showConfirm && (
           <>
             <button 
@@ -128,16 +141,15 @@ export const MedicineItem = ({ medicine, onUpdate, onDelete, isSaving = false, i
               <FastPencilIcon />
             </button>
             <Link 
-              to={`/medicines/${medicine.id}?edit=true`}
+              to={`/medication-schedules/${schedule.id}`}
               onClick={e => e.stopPropagation()}
               className="p-2.5 rounded-xl text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
-              title="Dettagli e Modifica"
+              title="Dettagli"
             >
               <PencilIcon />
             </Link>
           </>
         )}
-
         <button 
           onClick={handleDeleteClick} 
           disabled={isDeleting}
@@ -162,6 +174,12 @@ export const MedicineItem = ({ medicine, onUpdate, onDelete, isSaving = false, i
     </div>
   );
 };
+
+const ClockIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+  </svg>
+);
 
 const FastPencilIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
