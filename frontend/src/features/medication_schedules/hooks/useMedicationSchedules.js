@@ -1,9 +1,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import { scheduleService } from '../../../services/api';
 
-/**
- * Hook for managing the complete list of medication schedules
- */
+const parseBackendError = (err, fallbackMessage) => {
+  const responseData = err.response?.data;
+  if (!responseData) return fallbackMessage;
+
+  if (Array.isArray(responseData.detail)) {
+    return responseData.detail.map(d => `${d.loc[d.loc.length - 1]}: ${d.msg}`).join(", ");
+  }
+
+  if (typeof responseData.detail === 'string') {
+    return responseData.detail;
+  }
+
+  return responseData.message || fallbackMessage;
+};
+
 export const useMedicationSchedules = () => {
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,16 +50,7 @@ export const useMedicationSchedules = () => {
       await scheduleService.delete(id);
       await refresh();
     } catch (err) {
-      let message = "Error while deleting schedule";
-      if (err.response?.status === 422) {
-        const details = err.response.data.detail;
-        if (Array.isArray(details)) {
-          message = details.map(d => `${d.loc[1]}: ${d.msg}`).join(", ");
-        }
-      } else {
-        message = err.response?.data?.detail || message;
-      }
-      setDeleteError(message);
+      setDeleteError(parseBackendError(err, "Errore durante l'eliminazione"));
       throw err;
     } finally {
       setIsDeleting(false);
@@ -65,16 +68,7 @@ export const useMedicationSchedules = () => {
       }
       await refresh();
     } catch (err) {
-      let message = "Error while saving schedule";
-      if (err.response?.status === 422) {
-        const details = err.response.data.detail;
-        if (Array.isArray(details)) {
-          message = details.map(d => `${d.loc[1]}: ${d.msg}`).join(", ");
-        }
-      } else {
-        message = err.response?.data?.detail || message;
-      }
-      setSaveError(message);
+      setSaveError(parseBackendError(err, "Errore durante il salvataggio"));
       throw err;
     } finally {
       setIsSaving(false);
@@ -84,9 +78,6 @@ export const useMedicationSchedules = () => {
   return { schedules, loading, error, isDeleting, deleteError, isSaving, saveError, remove, save, refresh };
 };
 
-/**
- * Hook for managing a single medication schedule
- */
 export const useMedicationSchedule = (id) => {
   const [schedule, setSchedule] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -123,16 +114,7 @@ export const useMedicationSchedule = (id) => {
       setSchedule(res.data);
       return res.data;
     } catch (err) {
-      let message = "Error while updating schedule";
-      if (err.response?.status === 422) {
-        const details = err.response.data.detail;
-        if (Array.isArray(details)) {
-          message = details.map(d => `${d.loc[1]}: ${d.msg}`).join(", ");
-        }
-      } else {
-        message = err.response?.data?.detail || message;
-      }
-      setSaveError(message);
+      setSaveError(parseBackendError(err, "Errore durante il salvataggio"));
       throw err;
     } finally {
       setIsSaving(false);
@@ -145,16 +127,7 @@ export const useMedicationSchedule = (id) => {
       setDeleteError(null);
       await scheduleService.delete(id);
     } catch (err) {
-      let message = "Error while deleting schedule";
-      if (err.response?.status === 422) {
-        const details = err.response.data.detail;
-        if (Array.isArray(details)) {
-          message = details.map(d => `${d.loc[1]}: ${d.msg}`).join(", ");
-        }
-      } else {
-        message = err.response?.data?.detail || message;
-      }
-      setDeleteError(message);
+      setDeleteError(parseBackendError(err, "Errore durante l'eliminazione"));
       throw err;
     } finally {
       setIsDeleting(false);

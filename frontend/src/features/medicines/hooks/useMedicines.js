@@ -1,6 +1,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import { medicineService } from '../../../services/api';
 
+const parseBackendError = (err, fallbackMessage) => {
+  const responseData = err.response?.data;
+  if (!responseData) return fallbackMessage;
+
+  if (Array.isArray(responseData.detail)) {
+    return responseData.detail.map(d => `${d.loc[d.loc.length - 1]}: ${d.msg}`).join(", ");
+  }
+
+  if (typeof responseData.detail === 'string') {
+    return responseData.detail;
+  }
+
+  return responseData.message || fallbackMessage;
+};
+
 export const useMedicines = () => {
   const [medicines, setMedicines] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,8 +44,7 @@ export const useMedicines = () => {
       await medicineService.delete(id);
       await refresh();
     } catch (err) {
-      const message = err.response?.data?.detail || "Errore durante l'eliminazione";
-      setDeleteError(message);
+      setDeleteError(parseBackendError(err, "Errore durante l'eliminazione"));
       throw err;
     } finally {
       setIsDeleting(false);
@@ -48,16 +62,7 @@ export const useMedicines = () => {
       }
       await refresh();
     } catch (err) {
-      let message = "Errore durante il salvataggio";
-      if (err.response?.status === 422) {
-        const details = err.response.data.detail;
-        if (Array.isArray(details)) {
-          message = details.map(d => `${d.loc[1]}: ${d.msg}`).join(", ");
-        }
-      } else {
-        message = err.response?.data?.detail || message;
-      }
-      setSaveError(message);
+      setSaveError(parseBackendError(err, "Errore durante il salvataggio"));
       throw err;
     } finally {
       setIsSaving(false);
@@ -66,7 +71,6 @@ export const useMedicines = () => {
 
   return { medicines, loading, isSaving, saveError, isDeleting, deleteError, remove, save, refresh };
 };
-
 
 export const useMedicine = (id) => {
   const [medicine, setMedicine] = useState(null);
@@ -85,7 +89,6 @@ export const useMedicine = (id) => {
       setMedicine(res.data);
       setError(null);
     } catch (err) {
-      console.error("Errore fetch medicina:", err);
       setError(err);
     } finally {
       setLoading(false);
@@ -104,17 +107,7 @@ export const useMedicine = (id) => {
       setMedicine(res.data);
       return res.data;
     } catch (err) {
-      let message = "Errore durante il salvataggio";
-      if (err.response?.status === 422) {
-        // Estraiamo i messaggi di validazione di Pydantic
-        const details = err.response.data.detail;
-        if (Array.isArray(details)) {
-          message = details.map(d => `${d.loc[1]}: ${d.msg}`).join(", ");
-        }
-      } else {
-        message = err.response?.data?.detail || message;
-      }
-      setSaveError(message);
+      setSaveError(parseBackendError(err, "Errore durante il salvataggio"));
       throw err;
     } finally {
       setIsSaving(false);
@@ -127,24 +120,12 @@ export const useMedicine = (id) => {
       setDeleteError(null);
       await medicineService.delete(id);
     } catch (err) {
-      const message = err.response?.data?.detail || "Errore durante l'eliminazione";
-      setDeleteError(message);
+      setDeleteError(parseBackendError(err, "Errore durante l'eliminazione"));
       throw err;
     } finally {
       setIsDeleting(false);
     }
   };
 
-  return { 
-    medicine, 
-    loading, 
-    error, 
-    update, 
-    remove, 
-    isSaving, 
-    saveError, 
-    isDeleting, 
-    deleteError, 
-    refresh: fetchMedicine 
-  };
+  return { medicine, loading, error, update, remove, isSaving, saveError, isDeleting, deleteError, refresh: fetchMedicine };
 };
