@@ -14,7 +14,6 @@ def setup_data(session):
     schedule = MedicationSchedule(
         medicine_id=medicine.id,
         scheduled_time=time(8, 0),
-        dosage="1 tablet"
     )
     session.add(schedule)
     session.commit()
