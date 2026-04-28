@@ -45,7 +45,7 @@ export const LogItem = ({ schedule, onToggle, isSaving = false }) => {
             onChange={handleToggle}
             disabled={isSaving}
           />
-          <div className="w-10 h-6 bg-slate-200 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[10px] after:left-[10px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4"></div>
+          <div className="w-10 h-6 bg-slate-200 rounded-full peer peer-checked:bg-green-600 after:content-[''] after:absolute after:top-[10px] after:left-[10px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4"></div>
         </label>
       </div>
     </div>
