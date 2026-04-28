@@ -5,6 +5,8 @@ import MedicinesPage from './pages/medicines/MedicinesPage';
 import MedicineDetailPage from './pages/medicines/MedicineDetailPage';
 import SchedulesPage from './pages/schedules/SchedulesPage';
 import ScheduleDetailPage from './pages/schedules/ScheduleDetailPage';
+import MainLogsPage from './pages/logs/MainLogsPage';
+import LogsPage from './pages/logs/LogsPage';
 
 function App() {
   return (
@@ -16,7 +18,8 @@ function App() {
           <Route path="/medicines/:id" element={<MedicineDetailPage />} />
           <Route path="/medication-schedules" element={<SchedulesPage />} />
           <Route path="/medication-schedules/:id" element={<ScheduleDetailPage />} />
-          <Route path="/logs" element={<MedicinesPage />} />
+          <Route path="/medication-logs" element={<LogsPage />} />
+          <Route path="/medication-logs/main" element={<MainLogsPage />} />
           <Route path="*" element={<Home />} />
         </Routes>
       </div>

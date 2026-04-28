@@ -21,4 +21,7 @@ class MedicationSchedule(MedicationScheduleBase, table=True):
     # RELATIONS
 
     medicine: "Medicine" = Relationship(back_populates='schedules')
-    logs: List['MedicationLog'] = Relationship(back_populates='schedule')
+    logs: List['MedicationLog'] = Relationship(
+        back_populates='schedule',
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )

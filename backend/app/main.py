@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 from app.database import get_session
 from app.models.medicine import Medicine
 from app.models.medication_schedule import MedicationSchedule
-from app.models.medication_log import MedicationLog
 from app.api.v1 import medicines
 from app.api.v1 import medication_schedules
 from app.api.v1 import medication_logs

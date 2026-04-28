@@ -21,4 +21,10 @@ export const scheduleService = {
   delete: (id) => api.delete(`/medication-schedules/${id}`),
 };
 
+export const logService = {
+  getMain: () => api.get('/medication-logs/'),
+  create: (data) => api.post('/medication-logs/', data),
+  update: (id, data) => api.put(`/medication-logs/${id}`, data),
+};
+
 export default api;
