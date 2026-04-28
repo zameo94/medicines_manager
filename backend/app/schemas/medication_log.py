@@ -22,6 +22,7 @@ class MedicationLogRead(MedicationLogBase):
 
 class MedicationScheduleWithLog(MedicationScheduleRead):
     current_log: Optional[MedicationLogRead] = None
+    is_late: bool = False
 
 class MedicationDashboard(SQLModel):
     reference_date: date

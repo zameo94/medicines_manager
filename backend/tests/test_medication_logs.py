@@ -1,6 +1,6 @@
 import pytest
 from fastapi import status
-from datetime import date, timedelta, time
+from datetime import date, timedelta, time, datetime
 from app.models.medicine import Medicine
 from app.models.medication_schedule import MedicationSchedule
 from app.models.medication_log import MedicationLog
@@ -32,6 +32,31 @@ def test_get_dashboard(client, session):
     assert len(data["schedules"]) >= 1
     assert data["schedules"][0]["medicine"]["name"] == "Tachipirina"
     assert data["schedules"][0]["current_log"] is None
+    assert "is_late" in data["schedules"][0]
+
+def test_is_late_calculation(client, session, mocker):
+    mock_now = mocker.patch("app.api.v1.medication_logs.datetime")
+    
+    mock_now.now.return_value = datetime(2026, 4, 28, 10, 0, 0)
+    
+    medicine = Medicine(name="Med", is_active=True)
+    session.add(medicine)
+    session.commit()
+    
+    late_schedule = MedicationSchedule(medicine_id=medicine.id, scheduled_time=time(8, 0))
+    future_schedule = MedicationSchedule(medicine_id=medicine.id, scheduled_time=time(12, 0))
+    
+    session.add(late_schedule)
+    session.add(future_schedule)
+    session.commit()
+    
+    response = client.get("/medication-logs/")
+    schedules = response.json()["schedules"]
+    
+    schedules.sort(key=lambda x: x["scheduled_time"])
+    
+    assert schedules[0]["is_late"] is True
+    assert schedules[1]["is_late"] is False
 
 def test_create_medication_log(client, session):
     medicine, schedule = setup_data(session)

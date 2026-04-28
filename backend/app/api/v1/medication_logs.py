@@ -28,10 +28,13 @@ def main_medication_logs(session: Session = Depends(get_session)):
     logs_map = {log.schedule_id: log for log in logs}
     schedules_with_logs = []
 
+    time_now = datetime.now().time().replace(microsecond=0)
+    
     for schedule in schedules:
         schedule_data = schedule.model_dump()
         schedule_data["medicine"] = schedule.medicine
         schedule_data["current_log"] = logs_map.get(schedule.id)
+        schedule_data["is_late"] = schedule.scheduled_time < time_now
 
         schedules_with_logs.append(schedule_data)
     

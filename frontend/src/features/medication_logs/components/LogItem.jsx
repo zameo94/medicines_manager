@@ -33,8 +33,13 @@ export const LogItem = ({ schedule, onToggle, isSaving = false }) => {
           <span className="text-xs font-medium text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">
             {schedule.scheduled_time.substring(0, 5)}
           </span>
-        </div>
-      </div>
+          {schedule.is_late && !isChecked && (
+            <div className="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-xl border border-amber-100 shrink-0">
+              <span className="text-[10px] font-black uppercase tracking-wider">In ritardo</span>
+            </div>
+          )}
+          </div>
+          </div>
 
       <div className="flex items-center shrink-0 ml-auto">
         <label className="relative flex items-center cursor-pointer p-2">
