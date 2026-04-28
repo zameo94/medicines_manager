@@ -7,11 +7,13 @@ import SchedulesPage from './pages/schedules/SchedulesPage';
 import ScheduleDetailPage from './pages/schedules/ScheduleDetailPage';
 import MainLogsPage from './pages/logs/MainLogsPage';
 import LogsPage from './pages/logs/LogsPage';
+import Navbar from './components/Navbar';
 
 function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-slate-50">
+        <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/medicines" element={<MedicinesPage />} />
