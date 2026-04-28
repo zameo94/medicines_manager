@@ -29,7 +29,7 @@ def main_medication_logs(session: Session = Depends(get_session)):
     schedules_with_logs = []
 
     time_now = datetime.now().time().replace(microsecond=0)
-    
+
     for schedule in schedules:
         schedule_data = schedule.model_dump()
         schedule_data["medicine"] = schedule.medicine
@@ -70,6 +70,7 @@ def index_medication_logs(
             select(MedicationLog).where(MedicationLog.reference_date == target_date)
         ).all()
         logs_map = {log.schedule_id: log for log in logs}
+        time_now = datetime.now().time().replace(microsecond=0)
 
         for s in schedules:
             full_history.append({
@@ -77,7 +78,8 @@ def index_medication_logs(
                 "schedule": {
                     "id": s.id,
                     "scheduled_time": s.scheduled_time,
-                    "medicine": s.medicine
+                    "medicine": s.medicine,
+                    "is_late" : s.scheduled_time < time_now and target_date == ref_date_today
                 },
                 "log": logs_map.get(s.id),
                 "is_today": target_date == ref_date_today,

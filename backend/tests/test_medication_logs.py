@@ -100,11 +100,10 @@ def test_update_medication_log(client, session):
     
     assert response.status_code == status.HTTP_200_OK
     assert data["is_taken"] is False
-
 def test_get_index_logs(client, session):
     medicine, schedule = setup_data(session)
     today = date.today()
-    
+
     client.post(
         "/medication-logs/",
         json={
@@ -113,20 +112,45 @@ def test_get_index_logs(client, session):
             "schedule_id": schedule.id
         }
     )
-    
+
     response = client.get("/medication-logs/index")
     data = response.json()
-    
+
     assert response.status_code == status.HTTP_200_OK
     assert len(data) >= 1
     found = False
-
     for item in data:
         if item["schedule"]["id"] == schedule.id and item["reference_date"] == today.isoformat():
             assert item["log"]["is_taken"] is True
+            assert "is_late" in item["schedule"]
             found = True
             break
     assert found is True
+
+def test_index_is_late_calculation(client, session, mocker):
+    mock_now = mocker.patch("app.api.v1.medication_logs.datetime")
+    mock_now.now.return_value = datetime(2026, 4, 28, 10, 0, 0)
+
+    medicine = Medicine(name="Med", is_active=True)
+    session.add(medicine)
+    session.commit()
+
+    late_schedule = MedicationSchedule(medicine_id=medicine.id, scheduled_time=time(8, 0))
+    future_schedule = MedicationSchedule(medicine_id=medicine.id, scheduled_time=time(12, 0))
+
+    session.add(late_schedule)
+    session.add(future_schedule)
+    session.commit()
+
+    response = client.get("/medication-logs/index?start_date=2026-04-28&end_date=2026-04-28")
+    data = response.json()
+
+    today_entries = [e for e in data if e["reference_date"] == "2026-04-28"]
+    today_entries.sort(key=lambda x: x["schedule"]["scheduled_time"])
+
+    assert today_entries[0]["schedule"]["is_late"] is True  # 08:00 < 10:00
+    assert today_entries[1]["schedule"]["is_late"] is False # 12:00 > 10:00
+
 
 def test_get_index_with_date_range(client, session):
     medicine, schedule = setup_data(session)
