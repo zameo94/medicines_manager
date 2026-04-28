@@ -33,8 +33,8 @@ export const MedicineCreateForm = ({ onSubmit, initialData, onCancel }) => {
           onChange={e => setFormData({...formData, name: e.target.value})}
           required
         />
-        <input 
-          className="p-3.5 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50"
+        <textarea 
+          className="p-3.5 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 min-h-[120px]"
           placeholder="Descrizione"
           value={formData.description}
           onChange={e => setFormData({...formData, description: e.target.value})}
