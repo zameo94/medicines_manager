@@ -1,8 +1,6 @@
 from datetime import datetime, date
-from typing import Optional, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
-from datetime import datetime
-from sqlalchemy import Column, DateTime, func
 from .medication_schedule import MedicationScheduleRead
 
 class MedicationLogBase(SQLModel):
@@ -20,4 +18,11 @@ class MedicationLogUpdate(MedicationLogBase):
 
 class MedicationLogRead(MedicationLogBase):
     id: int
-    medication_schedule: MedicationScheduleRead
+    schedule: MedicationScheduleRead
+
+class MedicationScheduleWithLog(MedicationScheduleRead):
+    current_log: Optional[MedicationLogRead] = None
+
+class MedicationDashboard(SQLModel):
+    reference_date: date
+    schedules: List[MedicationScheduleWithLog]
