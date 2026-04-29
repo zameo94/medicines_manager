@@ -13,6 +13,7 @@ from sqlmodel import SQLModel
 from app.models.medicine import Medicine
 from app.models.medication_schedule import MedicationSchedule
 from app.models.medication_log import MedicationLog
+from app.models.notification import Notification
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
