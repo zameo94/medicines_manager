@@ -1,3 +1,6 @@
+#Main
+.env
+
 # Python
 backend/venv/
 backend/.env
