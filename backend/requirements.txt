@@ -17,8 +17,10 @@ httpx
 python-multipart
 
 # Background Tasks
-apscheduler
+taskiq
+taskiq-redis
 
 # Tests
 pytest
 pytest-mock
+pytest-asyncio
