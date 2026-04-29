@@ -1,0 +1,78 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: medicines_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-test_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    container_name: medicines_redis
+    restart: always
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+
+  backend:
+    build: ./backend
+    container_name: medicines_backend
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER:-user}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-test_db}
+      - REDIS_URL=redis://redis:6379/0
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "8000:8000"
+
+  worker:
+    build: ./backend
+    container_name: medicines_worker
+    restart: always
+    command: taskiq worker app.core.tkq:broker
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER:-user}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-test_db}
+      - REDIS_URL=redis://redis:6379/0
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+    depends_on:
+      - db
+      - redis
+
+  scheduler:
+    build: ./backend
+    container_name: medicines_scheduler
+    restart: always
+    command: taskiq scheduler app.core.tkq:scheduler
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER:-user}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-test_db}
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+
+  frontend:
+    build: ./frontend
+    container_name: medicines_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+    name: medicines_postgres_volume
+  redis_data:
+    name: medicines_redis_volume
