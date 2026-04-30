@@ -41,7 +41,7 @@ async def check_missed_medications():
 def get_medication_schedules(current_time: time, session: Session):
     return session.exec(
         select(MedicationSchedule)
-        .options(joinedload(MedicationSchedule.medicine)) # Carica subito la medicina
+        .options(joinedload(MedicationSchedule.medicine))
         .where(MedicationSchedule.scheduled_time < current_time)
         .order_by(MedicationSchedule.scheduled_time)
     ).all()
