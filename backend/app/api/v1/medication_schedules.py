@@ -37,7 +37,7 @@ def create_medication_schedule(medication_schedule_data: MedicationScheduleCreat
             detail=f"Error while saving: {e}"
         )
 
-@router.put("/{medication_schedule_id}", response_model=MedicationSchedule)
+@router.put("/{medication_schedule_id}", response_model=MedicationScheduleRead)
 def update_medicine(medication_schedule_id: int, medicine_data: MedicationScheduleUpdate, session: Session = Depends(get_session)):
     db_medication_schedule = session.get(MedicationSchedule, medication_schedule_id)
     
@@ -55,6 +55,7 @@ def update_medicine(medication_schedule_id: int, medicine_data: MedicationSchedu
         session.add(db_medication_schedule)
         session.commit()
         session.refresh(db_medication_schedule)
+        _ = db_medication_schedule.medicine
         return db_medication_schedule
     except Exception as e:
         session.rollback()

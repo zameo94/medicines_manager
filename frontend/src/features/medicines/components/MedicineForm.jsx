@@ -12,6 +12,11 @@ export const MedicineForm = ({
 }) => {
   const [isEditing, setIsEditing] = useState(initialIsEditing);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  useEffect(() => {
+    setIsEditing(initialIsEditing);
+  }, [initialIsEditing]);
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -28,12 +33,17 @@ export const MedicineForm = ({
     }
   }, [medicine]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSave(formData);
+    try {
+      await onSave(formData);
+      setIsEditing(false);
+    } catch (err) {
+      // Error handled by parent
+    }
   };
 
-  const handleDelete = () => {
+  const onDeleteClick = () => {
     if (showDeleteConfirm) {
       onDelete();
     } else {
@@ -78,7 +88,7 @@ export const MedicineForm = ({
             </p>
             {onDelete && (
               <button 
-                onClick={handleDelete}
+                onClick={onDeleteClick}
                 disabled={isDeleting}
                 className={`mt-2 text-left text-xs font-bold uppercase tracking-tighter transition-colors ${showDeleteConfirm ? 'text-red-600' : 'text-red-400 hover:text-red-600'}`}
               >
@@ -164,7 +174,7 @@ export const MedicineForm = ({
         {onDelete && (
           <button 
             type="button"
-            onClick={handleDelete}
+            onClick={onDeleteClick}
             disabled={isSaving || isDeleting}
             className={`w-full py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all border-2 ${
               showDeleteConfirm 

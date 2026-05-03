@@ -11,6 +11,7 @@ from app.schemas.medication_log import (
     MedicationDashboard
 )
 from app.models.medication_schedule import MedicationSchedule
+from app.core.utils import is_scheduled_for_today
 
 router = APIRouter()
 
@@ -31,6 +32,9 @@ def main_medication_logs(session: Session = Depends(get_session)):
     time_now = datetime.now().time().replace(microsecond=0)
 
     for schedule in schedules:
+        if not is_scheduled_for_today(schedule, ref_date):
+            continue
+            
         schedule_data = schedule.model_dump()
         schedule_data["medicine"] = schedule.medicine
         schedule_data["current_log"] = logs_map.get(schedule.id)
@@ -73,6 +77,10 @@ def index_medication_logs(
         time_now = datetime.now().time().replace(microsecond=0)
 
         for s in schedules:
+            log = logs_map.get(s.id)
+            if not log and not is_scheduled_for_today(s, target_date):
+                continue
+                
             full_history.append({
                 "reference_date": target_date,
                 "schedule": {
@@ -81,7 +89,7 @@ def index_medication_logs(
                     "medicine": s.medicine,
                     "is_late" : s.scheduled_time < time_now and target_date == ref_date_today
                 },
-                "log": logs_map.get(s.id),
+                "log": log,
                 "is_today": target_date == ref_date_today,
                 "is_future": target_date > ref_date_today,
             })

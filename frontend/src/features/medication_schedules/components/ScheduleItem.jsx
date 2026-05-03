@@ -18,6 +18,22 @@ export const ScheduleItem = ({ schedule, onUpdate, onDelete, isSaving = false, i
     }
   };
 
+  const getRecurrenceSummary = () => {
+    if (schedule.frequency === 'DAILY') {
+      return schedule.interval === 1 ? 'Ogni giorno' : `Ogni ${schedule.interval}gg`;
+    }
+    if (schedule.frequency === 'WEEKLY') {
+      const dayLabels = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
+      const selected = schedule.days_of_week?.map(d => dayLabels[d]).join(', ');
+      return `${selected || 'Mai'} ${schedule.interval > 1 ? `(ogni ${schedule.interval} sett)` : ''}`;
+    }
+    if (schedule.frequency === 'MONTHLY') {
+      const day = schedule.day_of_month === 31 ? 'Ultimo' : schedule.day_of_month;
+      return `Giorno ${day} ${schedule.interval > 1 ? `(ogni ${schedule.interval} mesi)` : ''}`;
+    }
+    return '';
+  };
+
   useEffect(() => {
     if (isEditing) {
       const fetchMedicines = async () => {
@@ -35,7 +51,12 @@ export const ScheduleItem = ({ schedule, onUpdate, onDelete, isSaving = false, i
   const handleSave = async (e) => {
     e.stopPropagation();
     try {
-      await onUpdate(schedule.id, editData);
+      // Uniamo i dati modificati con quelli esistenti per non perdere la ricorrenza
+      const finalData = {
+        ...schedule,
+        ...editData
+      };
+      await onUpdate(schedule.id, finalData);
       setIsEditing(false);
     } catch (err) {
       // Error handled in superior page
@@ -115,19 +136,24 @@ export const ScheduleItem = ({ schedule, onUpdate, onDelete, isSaving = false, i
             {schedule.scheduled_time.slice(0, 5)}
           </span>
           <span className="text-slate-300 font-light shrink-0">|</span>
-          {schedule.medicine ? (
-            <Link 
-              to={`/medicines/${schedule.medicine.id}`} 
-              onClick={e => e.stopPropagation()}
-              className="font-bold text-blue-600 truncate text-base hover:underline"
-            >
-              {schedule.medicine.name}
-            </Link>
-          ) : (
-            <span className="font-bold text-slate-400 truncate text-base italic">
-              Medicina non trovata
+          <div className="flex flex-col min-w-0">
+            {schedule.medicine ? (
+              <Link 
+                to={`/medicines/${schedule.medicine.id}`} 
+                onClick={e => e.stopPropagation()}
+                className="font-bold text-blue-600 truncate text-base hover:underline leading-tight"
+              >
+                {schedule.medicine.name}
+              </Link>
+            ) : (
+              <span className="font-bold text-slate-400 truncate text-base italic leading-tight">
+                Medicina non trovata
+              </span>
+            )}
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">
+              {getRecurrenceSummary()}
             </span>
-          )}
+          </div>
         </div>
       </div>
 
