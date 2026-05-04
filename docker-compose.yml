@@ -7,6 +7,7 @@ services:
       POSTGRES_USER: ${DB_USER:-user}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
       POSTGRES_DB: ${DB_NAME:-test_db}
+      TZ: Europe/Rome
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -30,6 +31,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - TZ=Europe/Rome
     depends_on:
       - db
       - redis
@@ -46,6 +48,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - TZ=Europe/Rome
     depends_on:
       - db
       - redis
@@ -58,6 +61,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://${DB_USER:-user}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-test_db}
       - REDIS_URL=redis://redis:6379/0
+      - TZ=Europe/Rome
     depends_on:
       - db
       - redis

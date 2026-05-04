@@ -1,3 +1,4 @@
+import calendar
 from datetime import datetime, date, time
 from sqlmodel import select, Session
 from sqlalchemy.orm import joinedload
@@ -6,8 +7,10 @@ from app.core.tkq import broker
 from app.database import engine
 from app.services.telegram import TelegramService
 from app.models.medication_schedule import MedicationSchedule
+from app.models.medicine import Medicine
 from app.models.medication_log import MedicationLog
 from app.models.notification import Notification
+from app.core.utils import is_scheduled_for_today
 
 @broker.task(
     retries=3, 
@@ -19,7 +22,7 @@ async def check_missed_medications():
     with Session(engine) as session:
         current_time = datetime.now().time()
         today = date.today()
-        medication_schedules = get_medication_schedules(current_time, session)
+        medication_schedules = get_medication_schedules(current_time, session, today)
         
         if not medication_schedules:
             return
@@ -38,13 +41,19 @@ async def check_missed_medications():
                 await TelegramService.send_message(message)
                 save_notification(medication_schedule.id, message, today, session)
 
-def get_medication_schedules(current_time: time, session: Session):
-    return session.exec(
+def get_medication_schedules(current_time: time, session: Session, today: date):
+    schedules = session.exec(
         select(MedicationSchedule)
         .options(joinedload(MedicationSchedule.medicine))
         .where(MedicationSchedule.scheduled_time < current_time)
         .order_by(MedicationSchedule.scheduled_time)
     ).all()
+
+    output = []
+    for schedule in schedules:
+        if is_scheduled_for_today(schedule, today):
+            output.append(schedule)
+    return output
 
 def get_medication_logs_map(schedule_ids : list[int], today: date, session: Session):
     statement = select(MedicationLog).where(

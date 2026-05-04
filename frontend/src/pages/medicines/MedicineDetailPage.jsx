@@ -1,10 +1,11 @@
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useMedicine } from '../../features/medicines/hooks/useMedicines';
 import { MedicineForm } from '../../features/medicines/components/MedicineForm';
 
 export default function MedicineDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { medicine, loading, error, update, remove, isSaving, saveError, isDeleting, deleteError } = useMedicine(id);
 
   if (loading) return (
@@ -38,7 +39,7 @@ export default function MedicineDetailPage() {
     }
   };
 
-  const isInitiallyEditing = new URLSearchParams(window.location.search).get('edit') === 'true';
+  const isInitiallyEditing = new URLSearchParams(location.search).get('edit') === 'true';
 
   return (
     <div className="max-w-2xl mx-auto p-6">

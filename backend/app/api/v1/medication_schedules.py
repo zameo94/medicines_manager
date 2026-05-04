@@ -37,7 +37,7 @@ def create_medication_schedule(medication_schedule_data: MedicationScheduleCreat
             detail=f"Error while saving: {e}"
         )
 
-@router.put("/{medication_schedule_id}", response_model=MedicationSchedule)
+@router.put("/{medication_schedule_id}", response_model=MedicationScheduleRead)
 def update_medicine(medication_schedule_id: int, medicine_data: MedicationScheduleUpdate, session: Session = Depends(get_session)):
     db_medication_schedule = session.get(MedicationSchedule, medication_schedule_id)
     
