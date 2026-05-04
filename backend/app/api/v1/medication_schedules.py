@@ -55,7 +55,6 @@ def update_medicine(medication_schedule_id: int, medicine_data: MedicationSchedu
         session.add(db_medication_schedule)
         session.commit()
         session.refresh(db_medication_schedule)
-        _ = db_medication_schedule.medicine
         return db_medication_schedule
     except Exception as e:
         session.rollback()

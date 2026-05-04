@@ -16,7 +16,8 @@ async def test_check_missed_medications_creates_notification(session: Session):
     
     schedule = MedicationSchedule(
         medicine_id=medicine.id,
-        scheduled_time=time(8, 0)
+        scheduled_time=time(8, 0),
+        start_date=date(2026, 1, 1)
     )
     session.add(schedule)
     session.commit()
@@ -53,7 +54,7 @@ async def test_check_missed_medications_already_taken(session: Session):
     session.add(medicine)
     session.commit()
     
-    schedule = MedicationSchedule(medicine_id=medicine.id, scheduled_time=time(8, 0))
+    schedule = MedicationSchedule(medicine_id=medicine.id, scheduled_time=time(8, 0), start_date=date(2026, 1, 1))
     session.add(schedule)
     session.commit()
     
@@ -89,7 +90,7 @@ async def test_check_missed_medications_no_duplicate_notifications(session: Sess
     medicine = Medicine(name="Test Medicine", dosage="10mg")
     session.add(medicine)
     session.commit()
-    schedule = MedicationSchedule(medicine_id=medicine.id, scheduled_time=time(8, 0))
+    schedule = MedicationSchedule(medicine_id=medicine.id, scheduled_time=time(8, 0), start_date=date(2026, 1, 1))
     session.add(schedule)
     session.commit()
     notification = Notification(
@@ -122,10 +123,10 @@ async def test_check_missed_medications_complex_mix(session: Session):
     session.add(m)
     session.commit()
 
-    s_saltato = MedicationSchedule(medicine_id=m.id, scheduled_time=time(7, 0))
-    s_preso = MedicationSchedule(medicine_id=m.id, scheduled_time=time(7, 30))
-    s_notificato = MedicationSchedule(medicine_id=m.id, scheduled_time=time(8, 0))
-    s_futuro = MedicationSchedule(medicine_id=m.id, scheduled_time=time(11, 0))
+    s_saltato = MedicationSchedule(medicine_id=m.id, scheduled_time=time(7, 0), start_date=date(2026, 1, 1))
+    s_preso = MedicationSchedule(medicine_id=m.id, scheduled_time=time(7, 30), start_date=date(2026, 1, 1))
+    s_notificato = MedicationSchedule(medicine_id=m.id, scheduled_time=time(8, 0), start_date=date(2026, 1, 1))
+    s_futuro = MedicationSchedule(medicine_id=m.id, scheduled_time=time(11, 0), start_date=date(2026, 1, 1))
     
     for s in [s_saltato, s_preso, s_notificato, s_futuro]:
         session.add(s)
@@ -160,3 +161,46 @@ async def test_check_missed_medications_complex_mix(session: Session):
                     assert new_notif.scheduled_id == s_saltato.id
                     
                     mock_send.assert_called_once()
+
+from app.tasks.reminders import get_medication_schedules, save_notification
+
+def test_get_medication_schedules_filtering(session: Session):
+    m = Medicine(name="Test", dosage="1")
+    session.add(m)
+    session.commit()
+    
+    s1 = MedicationSchedule(
+        medicine_id=m.id, 
+        scheduled_time=time(8, 0), 
+        start_date=date(2026, 1, 1)
+    )
+    s2 = MedicationSchedule(
+        medicine_id=m.id, 
+        scheduled_time=time(10, 0), 
+        start_date=date(2026, 1, 1)
+    )
+    s3 = MedicationSchedule(
+        medicine_id=m.id, 
+        scheduled_time=time(8, 0), 
+        start_date=date(2026, 12, 1)
+    )
+    
+    for s in [s1, s2, s3]:
+        session.add(s)
+    session.commit()
+    
+    today = date(2026, 5, 4)
+    now_time = time(9, 0)
+    
+    results = get_medication_schedules(now_time, session, today)
+    
+    assert len(results) == 1
+    assert results[0].id == s1.id
+
+def test_save_notification_error(session: Session, mocker):
+    mocker.patch.object(session, "commit", side_effect=Exception("DB Error"))
+    
+    with pytest.raises(Exception) as excinfo:
+        save_notification(1, "test message", date(2026, 5, 4), session)
+    
+    assert "Error while saving notification" in str(excinfo.value)

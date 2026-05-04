@@ -14,6 +14,7 @@ def setup_data(session):
     schedule = MedicationSchedule(
         medicine_id=medicine.id,
         scheduled_time=time(8, 0),
+        start_date=date(2026, 1, 1)
     )
     session.add(schedule)
     session.commit()
@@ -43,8 +44,8 @@ def test_is_late_calculation(client, session, mocker):
     session.add(medicine)
     session.commit()
     
-    late_schedule = MedicationSchedule(medicine_id=medicine.id, scheduled_time=time(8, 0))
-    future_schedule = MedicationSchedule(medicine_id=medicine.id, scheduled_time=time(12, 0))
+    late_schedule = MedicationSchedule(medicine_id=medicine.id, scheduled_time=time(8, 0), start_date=date(2026, 1, 1))
+    future_schedule = MedicationSchedule(medicine_id=medicine.id, scheduled_time=time(12, 0), start_date=date(2026, 1, 1))
     
     session.add(late_schedule)
     session.add(future_schedule)
@@ -135,8 +136,8 @@ def test_index_is_late_calculation(client, session, mocker):
     session.add(medicine)
     session.commit()
 
-    late_schedule = MedicationSchedule(medicine_id=medicine.id, scheduled_time=time(8, 0))
-    future_schedule = MedicationSchedule(medicine_id=medicine.id, scheduled_time=time(12, 0))
+    late_schedule = MedicationSchedule(medicine_id=medicine.id, scheduled_time=time(8, 0), start_date=date(2026, 1, 1))
+    future_schedule = MedicationSchedule(medicine_id=medicine.id, scheduled_time=time(12, 0), start_date=date(2026, 1, 1))
 
     session.add(late_schedule)
     session.add(future_schedule)
