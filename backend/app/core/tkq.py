@@ -19,4 +19,5 @@ scheduler = TaskiqScheduler(
     ],
 )
 
-import app.tasks.reminders
+import app.tasks.missed_medications
+import app.tasks.reminder_medications

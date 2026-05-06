@@ -1,6 +1,94 @@
 import calendar
-from datetime import date
+from datetime import datetime, date, time, timedelta
+from sqlmodel import select, Session
+from sqlalchemy.orm import joinedload
+from app.services.telegram import TelegramService
 from app.models.medication_schedule import MedicationSchedule
+from app.models.medicine import Medicine
+from app.models.medication_log import MedicationLog
+from app.models.notification import Notification
+from app.schemas.notification import NotificationType
+
+def get_today_medication_schedules(
+        current_time: time,
+        session: Session,
+        today: date,
+        medication_schedules_type: str,
+        next_minutes: int | None = None
+    ):
+    match medication_schedules_type:
+        case "PASSED":
+            db_schedules = get_passed_medication_schedules(current_time, session)
+        case "NEXT":
+            if next_minutes is None:
+                raise ValueError("next_minutes is required for NEXT type schedules")
+            db_schedules = get_next_medication_schedules(current_time, session, next_minutes)
+        case _:
+            return
+
+    schedules = []
+    for schedule in db_schedules:
+        if is_scheduled_for_today(schedule, today):
+            schedules.append(schedule)
+    return schedules
+
+def get_passed_medication_schedules(current_time: time, session: Session):
+    return session.exec(
+        select(MedicationSchedule)
+        .options(joinedload(MedicationSchedule.medicine))
+        .where(MedicationSchedule.scheduled_time < current_time)
+        .order_by(MedicationSchedule.scheduled_time)
+    ).all()
+
+def get_next_medication_schedules(current_time: time, session: Session, next_minutes: int):
+    normalized_current_time = current_time.replace(second=0, microsecond=0)
+    dummy_date = datetime.combine(datetime.today(), normalized_current_time)
+    next_minutes_datetime = dummy_date + timedelta(minutes=next_minutes)
+    next_minutes_time = next_minutes_datetime.time()
+
+    return session.exec(
+        select(MedicationSchedule)
+        .options(joinedload(MedicationSchedule.medicine))
+        .where(MedicationSchedule.scheduled_time == next_minutes_time)
+        .order_by(MedicationSchedule.scheduled_time)
+    ).all()
+
+
+def get_medication_logs_map(schedule_ids : list[int], today: date, session: Session):
+    statement = select(MedicationLog).where(
+        MedicationLog.schedule_id.in_(schedule_ids),
+        MedicationLog.reference_date == today,
+        MedicationLog.is_taken == True
+    )
+    logs = session.exec(statement).all()
+    return {log.schedule_id: log for log in logs}
+
+def get_notifications_map(schedule_ids: list[int], today: date, session: Session, notification_type: NotificationType):
+    statement = select(Notification).where(
+        Notification.reference_date == today,
+        Notification.scheduled_id.in_(schedule_ids),
+        Notification.type == notification_type
+    )
+    notifications = session.exec(statement).all()
+    return {notification.scheduled_id: notification for notification in notifications}
+
+def save_notification(medication_schedule_id : int, message: str, today: date, session: Session, notification_type: NotificationType):
+    try:
+        notification = Notification.model_validate(
+            {
+                "scheduled_id": medication_schedule_id,
+                "message": message,
+                "type": notification_type,
+                "reference_date": today
+            }
+        )
+        session.add(notification)
+        session.commit()
+        session.refresh(notification)
+    except Exception as e:
+        session.rollback()
+        raise Exception(f"Error while saving notification: {e}")
+
 
 def is_scheduled_for_today(schedule: MedicationSchedule, today: date) -> bool:
     if today < schedule.start_date:
