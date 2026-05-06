@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch, MagicMock, AsyncMock
 from datetime import time, datetime, date
 from sqlmodel import Session, select
-from app.tasks.reminders import check_missed_medications
+from app.tasks.missed_medications import check_missed_medications
 from app.models.medicine import Medicine
 from app.models.medication_schedule import MedicationSchedule
 from app.models.notification import Notification
@@ -24,11 +24,11 @@ async def test_check_missed_medications_creates_notification(session: Session):
     
     mock_now = datetime(2026, 4, 29, 9, 0, 0)
     
-    with patch("app.tasks.reminders.datetime") as mock_datetime:
+    with patch("app.tasks.missed_medications.datetime") as mock_datetime:
         mock_datetime.now.return_value = mock_now
         mock_datetime.combine = datetime.combine
         
-        with patch("app.tasks.reminders.date") as mock_date:
+        with patch("app.tasks.missed_medications.date") as mock_date:
             mock_date.today.return_value = date(2026, 4, 29)
             
             with patch("app.services.telegram.TelegramService.send_message", new_callable=AsyncMock) as mock_send:
@@ -36,7 +36,7 @@ async def test_check_missed_medications_creates_notification(session: Session):
                 mock_session_ctx.__enter__.return_value = session
                 mock_session_ctx.__exit__.return_value = None
                 
-                with patch("app.tasks.reminders.Session", return_value=mock_session_ctx):
+                with patch("app.tasks.missed_medications.Session", return_value=mock_session_ctx):
                     
                     await check_missed_medications()
                     
@@ -69,15 +69,15 @@ async def test_check_missed_medications_already_taken(session: Session):
 
     mock_now = datetime(2026, 4, 29, 9, 0, 0)
     
-    with patch("app.tasks.reminders.datetime") as mock_datetime:
+    with patch("app.tasks.missed_medications.datetime") as mock_datetime:
         mock_datetime.now.return_value = mock_now
-        with patch("app.tasks.reminders.date") as mock_date:
+        with patch("app.tasks.missed_medications.date") as mock_date:
             mock_date.today.return_value = date(2026, 4, 29)
             with patch("app.services.telegram.TelegramService.send_message", new_callable=AsyncMock) as mock_send:
                 mock_session_ctx = MagicMock()
                 mock_session_ctx.__enter__.return_value = session
                 mock_session_ctx.__exit__.return_value = None
-                with patch("app.tasks.reminders.Session", return_value=mock_session_ctx):
+                with patch("app.tasks.missed_medications.Session", return_value=mock_session_ctx):
                     
                     await check_missed_medications()
                     
@@ -103,15 +103,15 @@ async def test_check_missed_medications_no_duplicate_notifications(session: Sess
     session.commit()
 
     mock_now = datetime(2026, 4, 29, 9, 0, 0)
-    with patch("app.tasks.reminders.datetime") as mock_datetime:
+    with patch("app.tasks.missed_medications.datetime") as mock_datetime:
         mock_datetime.now.return_value = mock_now
-        with patch("app.tasks.reminders.date") as mock_date:
+        with patch("app.tasks.missed_medications.date") as mock_date:
             mock_date.today.return_value = date(2026, 4, 29)
             with patch("app.services.telegram.TelegramService.send_message", new_callable=AsyncMock) as mock_send:
                 mock_session_ctx = MagicMock()
                 mock_session_ctx.__enter__.return_value = session
                 mock_session_ctx.__exit__.return_value = None
-                with patch("app.tasks.reminders.Session", return_value=mock_session_ctx):
+                with patch("app.tasks.missed_medications.Session", return_value=mock_session_ctx):
                     await check_missed_medications()
                     notifications = session.exec(select(Notification)).all()
                     assert len(notifications) == 1
@@ -142,16 +142,16 @@ async def test_check_missed_medications_complex_mix(session: Session):
     session.commit()
 
     mock_now = datetime(2026, 4, 29, 9, 0, 0)
-    with patch("app.tasks.reminders.datetime") as mock_datetime:
+    with patch("app.tasks.missed_medications.datetime") as mock_datetime:
         mock_datetime.now.return_value = mock_now
         mock_datetime.combine = datetime.combine
-        with patch("app.tasks.reminders.date") as mock_date:
+        with patch("app.tasks.missed_medications.date") as mock_date:
             mock_date.today.return_value = date(2026, 4, 29)
             with patch("app.services.telegram.TelegramService.send_message", new_callable=AsyncMock) as mock_send:
                 mock_session_ctx = MagicMock()
                 mock_session_ctx.__enter__.return_value = session
                 mock_session_ctx.__exit__.return_value = None
-                with patch("app.tasks.reminders.Session", return_value=mock_session_ctx):
+                with patch("app.tasks.missed_medications.Session", return_value=mock_session_ctx):
                     await check_missed_medications()
                     
                     notifications = session.exec(select(Notification)).all()
@@ -162,13 +162,13 @@ async def test_check_missed_medications_complex_mix(session: Session):
                     
                     mock_send.assert_called_once()
 
-from app.tasks.reminders import get_medication_schedules, save_notification
+from app.core.utils import get_today_medication_schedules, save_notification
 
 def test_get_medication_schedules_filtering(session: Session):
     m = Medicine(name="Test", dosage="1")
     session.add(m)
     session.commit()
-    
+
     s1 = MedicationSchedule(
         medicine_id=m.id, 
         scheduled_time=time(8, 0), 
@@ -184,23 +184,24 @@ def test_get_medication_schedules_filtering(session: Session):
         scheduled_time=time(8, 0), 
         start_date=date(2026, 12, 1)
     )
-    
+
     for s in [s1, s2, s3]:
         session.add(s)
     session.commit()
-    
+
     today = date(2026, 5, 4)
     now_time = time(9, 0)
-    
-    results = get_medication_schedules(now_time, session, today)
-    
+
+    results = get_today_medication_schedules(now_time, session, today, "PASSED", None)
+
     assert len(results) == 1
     assert results[0].id == s1.id
 
 def test_save_notification_error(session: Session, mocker):
     mocker.patch.object(session, "commit", side_effect=Exception("DB Error"))
-    
+
+    from app.schemas.notification import NotificationType
     with pytest.raises(Exception) as excinfo:
-        save_notification(1, "test message", date(2026, 5, 4), session)
-    
+        save_notification(1, "test message", date(2026, 5, 4), session, NotificationType.MISSED)
+
     assert "Error while saving notification" in str(excinfo.value)
