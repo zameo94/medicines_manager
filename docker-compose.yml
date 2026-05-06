@@ -32,11 +32,10 @@ services:
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
       - TZ=Europe/Rome
+      - DEVELOPMENT=${DEVELOPMENT:-False}
     depends_on:
       - db
       - redis
-    ports:
-      - "8000:8000"
 
   worker:
     build: ./backend

@@ -14,15 +14,35 @@ from app.api.v1 import medication_logs
 
 load_dotenv()
 
-app = FastAPI(title="Medicines Manager API")
+IS_DEVELOPMENT = os.getenv("DEVELOPMENT", "False").lower() == "true"
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+app = FastAPI(
+    title="Medicines Manager API",
+    openapi_url="/openapi.json" if IS_DEVELOPMENT else None,
+    docs_url="/docs" if IS_DEVELOPMENT else None,
+    redoc_url="/redoc" if IS_DEVELOPMENT else None,
 )
+
+# Configurazione CORS
+if IS_DEVELOPMENT:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    allowed_origins = os.getenv("ALLOWED_ORIGINS", "").split(",")
+    allowed_origins = [o for o in allowed_origins if o]
+    
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=allowed_origins if allowed_origins else [],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 @app.get("/")
 def root(session: Session = Depends(get_session)):
