@@ -33,10 +33,21 @@ def get_today_medication_schedules(
     return schedules
 
 def get_passed_medication_schedules(current_time: time, session: Session):
+    current_dt = datetime.combine(date.today(), current_time)
+    limit_dt = current_dt - timedelta(hours=3)
+    
+    if limit_dt.date() < date.today():
+        limit_time = time(0, 0)
+    else:
+        limit_time = limit_dt.time()
+
     return session.exec(
         select(MedicationSchedule)
         .options(joinedload(MedicationSchedule.medicine))
-        .where(MedicationSchedule.scheduled_time < current_time)
+        .where(
+            MedicationSchedule.scheduled_time < current_time,
+            MedicationSchedule.scheduled_time >= limit_time
+        )
         .order_by(MedicationSchedule.scheduled_time)
     ).all()
 
