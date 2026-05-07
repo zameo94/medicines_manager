@@ -23,7 +23,3 @@ class Notification(NotificationBase, table=True):
     # RELATIONS
 
     schedule: "MedicationSchedule" = Relationship()
-
-    __table_args__ = (
-        UniqueConstraint("scheduled_id", "reference_date", "type", name="ix_unique_notification_per_day_type"),
-    )

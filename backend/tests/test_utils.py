@@ -1,7 +1,32 @@
 import pytest
-from datetime import date
+from datetime import date, time, datetime
 from app.models.medication_schedule import MedicationSchedule
-from app.core.utils import is_scheduled_for_today
+from app.models.medicine import Medicine
+from app.core.utils import is_scheduled_for_today, get_passed_medication_schedules
+from sqlmodel import Session
+
+def test_get_passed_medication_schedules_3h_window(session: Session):
+    m = Medicine(name="Test", dosage="1")
+    session.add(m)
+    session.commit()
+
+    s1 = MedicationSchedule(medicine_id=m.id, scheduled_time=time(11, 0), start_date=date(2026, 1, 1)) # IN
+    s2 = MedicationSchedule(medicine_id=m.id, scheduled_time=time(9, 30), start_date=date(2026, 1, 1)) # IN
+    s3 = MedicationSchedule(medicine_id=m.id, scheduled_time=time(8, 30), start_date=date(2026, 1, 1)) # OUT (too old)
+    s4 = MedicationSchedule(medicine_id=m.id, scheduled_time=time(13, 0), start_date=date(2026, 1, 1)) # OUT (future)
+
+    for s in [s1, s2, s3, s4]:
+        session.add(s)
+    session.commit()
+
+    current_time = time(12, 0)
+    results = get_passed_medication_schedules(current_time, session)
+
+    assert len(results) == 2
+    times = [r.scheduled_time for r in results]
+    assert time(11, 0) in times
+    assert time(9, 30) in times
+    assert time(8, 30) not in times
 
 def test_daily_schedule_every_day():
     start_date = date(2026, 5, 1)
