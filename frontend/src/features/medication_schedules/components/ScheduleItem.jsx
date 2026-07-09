@@ -82,7 +82,7 @@ export const ScheduleItem = ({ schedule, onUpdate, onDelete, isSaving = false, i
   if (isEditing) {
     return (
       <div className={`p-4 rounded-2xl border-2 animate-in fade-in duration-150 ${isSaving ? 'bg-slate-50 border-slate-200 opacity-70' : 'bg-blue-50 border-blue-200'}`}>
-        <div className="flex flex-wrap gap-2 items-center mb-3">
+        <div className="flex flex-wrap gap-2 items-center mb-2">
           <input 
             type="text"
             placeholder="HH:MM"

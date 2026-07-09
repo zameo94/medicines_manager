@@ -27,7 +27,8 @@ export const ScheduleForm = ({
     interval: 1,
     days_of_week: [],
     day_of_month: 1,
-    start_date: new Date().toISOString().split('T')[0]
+    start_date: new Date().toISOString().split('T')[0],
+    end_date: ''
   });
 
   useEffect(() => {
@@ -54,10 +55,11 @@ export const ScheduleForm = ({
         interval: schedule.interval || 1,
         days_of_week: schedule.days_of_week || [],
         day_of_month: schedule.day_of_month || 1,
-        start_date: schedule.start_date || new Date().toISOString().split('T')[0]
+        start_date: schedule.start_date || new Date().toISOString().split('T')[0],
+        end_date: schedule.end_date || ''
       });
     }
-  }, [schedule]);
+  }, [schedule, isEditing]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -65,7 +67,8 @@ export const ScheduleForm = ({
       ...formData,
       interval: parseInt(formData.interval),
       day_of_month: formData.frequency === 'MONTHLY' ? parseInt(formData.day_of_month) : null,
-      days_of_week: formData.frequency === 'WEEKLY' ? formData.days_of_week : null
+      days_of_week: formData.frequency === 'WEEKLY' ? formData.days_of_week : null,
+      end_date: formData.end_date ? formData.end_date : null
     };
     try {
       await onSave(submissionData);
@@ -146,7 +149,7 @@ export const ScheduleForm = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-3xl border border-slate-100">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50 p-6 rounded-3xl border border-slate-100">
             <div>
               <h4 className="text-[10px] uppercase font-black text-slate-400 tracking-widest mb-2">Ricorrenza</h4>
               <p className="font-bold text-slate-700">{getRecurrenceText() || 'Giornaliera'}</p>
@@ -155,6 +158,12 @@ export const ScheduleForm = ({
               <h4 className="text-[10px] uppercase font-black text-slate-400 tracking-widest mb-2">Data Inizio</h4>
               <p className="font-bold text-slate-700">
                 {formData.start_date ? new Date(formData.start_date).toLocaleDateString('it-IT') : 'Oggi'}
+              </p>
+            </div>
+            <div>
+              <h4 className="text-[10px] uppercase font-black text-slate-400 tracking-widest mb-2">Data Fine</h4>
+              <p className="font-bold text-slate-700">
+                {formData.end_date ? new Date(formData.end_date).toLocaleDateString('it-IT') : 'Senza scadenza'}
               </p>
             </div>
           </div>
@@ -296,15 +305,26 @@ export const ScheduleForm = ({
             </div>
           )}
 
-          <div>
-            <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest mb-2 ml-1">Data Inizio</label>
-            <input 
-              type="date"
-              className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 bg-white transition-all font-bold text-slate-700"
-              value={formData.start_date}
-              onChange={e => setFormData({...formData, start_date: e.target.value})}
-              required
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest mb-2 ml-1">Data Inizio</label>
+              <input 
+                type="date"
+                className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 bg-white transition-all font-bold text-slate-700"
+                value={formData.start_date}
+                onChange={e => setFormData({...formData, start_date: e.target.value})}
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest mb-2 ml-1">Data Fine (Opzionale)</label>
+              <input 
+                type="date"
+                className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 bg-white transition-all font-bold text-slate-700"
+                value={formData.end_date}
+                onChange={e => setFormData({...formData, end_date: e.target.value})}
+              />
+            </div>
           </div>
         </div>
       </div>

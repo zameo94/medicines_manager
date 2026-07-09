@@ -8,8 +8,8 @@ from app.services.telegram import TelegramService
 from app.schemas.notification import NotificationType
 
 @broker.task(
-    retries=3, 
-    retry_delay=120, 
+    retries=3,
+    retry_delay=120,
     retry_backoff=True,
     schedule=[{"cron": "*/30 * * * *"}] # Every 30 minutes
 )

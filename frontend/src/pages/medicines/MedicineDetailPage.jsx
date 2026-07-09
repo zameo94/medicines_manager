@@ -27,6 +27,7 @@ export default function MedicineDetailPage() {
       navigate(`/medicines/${id}`, { replace: true });
     } catch (err) {
       // Error handled through hook
+      throw err;
     }
   };
 

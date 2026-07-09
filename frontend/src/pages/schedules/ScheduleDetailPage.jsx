@@ -28,6 +28,7 @@ export default function ScheduleDetailPage() {
       navigate(`/medication-schedules/${id}`, { replace: true });
     } catch (err) {
       // Handled by hook
+      throw err;
     }
   };
 

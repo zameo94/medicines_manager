@@ -104,6 +104,9 @@ def save_notification(medication_schedule_id : int, message: str, today: date, s
 def is_scheduled_for_today(schedule: MedicationSchedule, today: date) -> bool:
     if today < schedule.start_date:
         return False
+    
+    if schedule.end_date and today > schedule.end_date:
+        return False
 
     if schedule.frequency == 'DAILY':
         return check_daily(schedule, today)

@@ -28,6 +28,7 @@ class MedicationScheduleBase(SQLModel):
     days_of_week: Optional[List[int]] = Field(default=None, sa_column=Column(JSON))
     day_of_month: Optional[int] = Field(default=None)
     start_date: date = Field(default_factory=date.today)
+    end_date: Optional[date] = Field(default=None)
 
     @field_validator('days_of_week')
     @classmethod
@@ -61,7 +62,10 @@ class MedicationScheduleBase(SQLModel):
         return value
     
     @model_validator(mode='after')
-    def validate_start_date_alignement(self):
+    def validate_date_alignement(self):
+        if self.start_date and self.end_date and self.end_date < self.start_date:
+            raise ValueError('End date non può essere minore di start date')
+        
         if self.frequency == 'MONTHLY' and self.day_of_month:
             if self.start_date.day != self.day_of_month:
                 # Handle special case for 31st vs end of month
