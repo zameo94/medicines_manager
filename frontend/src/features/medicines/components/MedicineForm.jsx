@@ -31,7 +31,7 @@ export const MedicineForm = ({
         is_active: medicine.is_active
       });
     }
-  }, [medicine]);
+  }, [medicine, isEditing]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
