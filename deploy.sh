@@ -1,8 +1,16 @@
 #!/bin/bash
 
-PROJECT_DIR="project_directory_path"
+CONFIG_FILE="deploy.conf"
 
 echo "Deploying the last version..."
+
+if [ -f "$CONFIG_FILE" ]; then
+    source "$CONFIG_FILE"
+else
+    echo "Error: $CONFIG_FILE not found."
+    echo "Please copy 'deploy.conf.example' to '$CONFIG_FILE' and set your variables."
+    exit 1
+fi
 
 echo "Going in the project directory"
 if ! cd "$PROJECT_DIR"; then
