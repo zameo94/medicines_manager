@@ -21,6 +21,11 @@ services:
       - redis_data:/data
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   backend:
     build: ./backend
@@ -35,8 +40,10 @@ services:
       - TZ=Europe/Rome
       - DEVELOPMENT=${DEVELOPMENT:-False}
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_started
+      redis:
+        condition: service_healthy
 
   worker:
     build: ./backend
@@ -51,8 +58,10 @@ services:
       - FRONTEND_MEDICATION_LOGS_MAIN_URL=${FRONTEND_MEDICATION_LOGS_MAIN_URL}
       - TZ=Europe/Rome
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_started
+      redis:
+        condition: service_healthy
 
   scheduler:
     build: ./backend
@@ -64,8 +73,10 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - TZ=Europe/Rome
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_started
+      redis:
+        condition: service_healthy
 
   frontend:
     build: ./frontend

@@ -17,8 +17,8 @@ httpx
 python-multipart
 
 # Background Tasks
-taskiq
-taskiq-redis
+taskiq==0.12.4
+taskiq-redis==1.2.2 # Blocked on Redis 7
 
 # Tests
 pytest

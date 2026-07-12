@@ -10,6 +10,14 @@ if ! cd "$PROJECT_DIR"; then
     exit 1
 fi
 
+echo "Stopping docker container"
+if docker compose down; then
+    echo "Containers stopped sucessfully"
+else
+    echo "Error stopping container, exiting"
+    exit 1
+fi
+
 echo "Updating code from Github"
 if git checkout main && git pull; then
     echo "Code updated sucessfully"
@@ -18,9 +26,17 @@ else
     exit 1
 fi
 
+echo "Rebuilding containers"
+if docker compose build --no-cache; then
+    echo "Containers builded sucessfully"
+else
+    echo "Error rebuilding container, exiting"
+    exit 1
+fi
 
-echo "Rebuilding and starting container in demon mode"
-if docker compose up -d --build; then
+
+echo "Starting container in demon mode"
+if docker compose up -d; then
     echo "Deploy completd!"
     docker ps
 else
