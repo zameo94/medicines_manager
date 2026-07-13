@@ -1,17 +1,17 @@
 #!/bin/bash
 
+### NEEDED VARIABLES ###
+## FROM .ENV
+# BACKUP_DIR
+# DB_USER
+# DB_NAME
+# DB_PASSWORD
+###
+
 ENV_PATH="your_env_path"
 TIMESTAMP=$(date +%Y-%m-%d_%H%M%S)
 CONTAINER_PATH="/tmp/medicines_backup.sql"
-BACKUP_DIR="your_backup_dir"
 HOST_PATH="$BACKUP_DIR/backup_${TIMESTAMP}.sql"
-
-echo "Starting DB backup..."
-
-if [ ! -d "$BACKUP_DIR" ]; then
-    echo "The directory backup doesn't exist. Creating it..."
-    mkdir $BACKUP_DIR
-fi
 
 echo "Chekcing .env file"
 
@@ -21,6 +21,13 @@ if [ -f "$ENV_PATH" ]; then
 else
     echo ".env file not found at $ENV_PATH"
     exit 1
+fi
+
+echo "Starting DB backup..."
+
+if [ ! -d "$BACKUP_DIR" ]; then
+    echo "The directory backup doesn't exist. Creating it..."
+    mkdir $BACKUP_DIR
 fi
 
 echo "Chekcing if Postgre is running"

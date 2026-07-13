@@ -1,8 +1,13 @@
 #!/bin/bash
 
+### NEEDED VARIABLES ###
+## FROM DEPLOY.CONF
+# PROJECT_DIR
+###
+
 CONFIG_FILE="deploy.conf"
 
-echo "Deploying the last version..."
+echo "Chekcing deploy.conf file"
 
 if [ -f "$CONFIG_FILE" ]; then
     source "$CONFIG_FILE"
@@ -11,6 +16,8 @@ else
     echo "Please copy 'deploy.conf.example' to '$CONFIG_FILE' and set your variables."
     exit 1
 fi
+
+echo "Deploying the last version..."
 
 echo "Going in the project directory"
 if ! cd "$PROJECT_DIR"; then
