@@ -10,9 +10,6 @@
 # DB_PASSWORD
 ###
 
-TIMESTAMP=$(date +%Y-%m-%d_%H%M%S)
-CONTAINER_PATH="/tmp/medicines_backup.sql"
-HOST_PATH="$BACKUP_DIR/backup_${TIMESTAMP}.sql"
 CONFIG_FILE="backup.conf"
 
 echo "Chekcing deploy.conf file"
@@ -26,6 +23,10 @@ else
     echo "Please copy 'deploy.conf.example' to '$CONFIG_FILE' and set your variables."
     exit 1
 fi
+
+TIMESTAMP=$(date +%Y-%m-%d_%H%M%S)
+CONTAINER_PATH="/tmp/medicines_backup.sql"
+HOST_PATH="$BACKUP_DIR/backup_${TIMESTAMP}.sql"
 
 echo "Chekcing .env file"
 
