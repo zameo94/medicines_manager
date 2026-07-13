@@ -17,6 +17,8 @@ CONFIG_FILE="backup.conf"
 
 echo "Chekcing deploy.conf file"
 
+cd "$(dirname "$0")"
+
 if [ -f "$CONFIG_FILE" ]; then
     source "$CONFIG_FILE"
 else
