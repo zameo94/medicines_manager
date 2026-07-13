@@ -1,17 +1,29 @@
 #!/bin/bash
 
 ### NEEDED VARIABLES ###
-## FROM .ENV
+## FROM BACKUP.CONF
+# ENV_PATH
 # BACKUP_DIR
+## FROM .ENV
 # DB_USER
 # DB_NAME
 # DB_PASSWORD
 ###
 
-ENV_PATH="your_env_path"
 TIMESTAMP=$(date +%Y-%m-%d_%H%M%S)
 CONTAINER_PATH="/tmp/medicines_backup.sql"
 HOST_PATH="$BACKUP_DIR/backup_${TIMESTAMP}.sql"
+CONFIG_FILE="backup.conf"
+
+echo "Chekcing deploy.conf file"
+
+if [ -f "$CONFIG_FILE" ]; then
+    source "$CONFIG_FILE"
+else
+    echo "Error: $CONFIG_FILE not found."
+    echo "Please copy 'deploy.conf.example' to '$CONFIG_FILE' and set your variables."
+    exit 1
+fi
 
 echo "Chekcing .env file"
 

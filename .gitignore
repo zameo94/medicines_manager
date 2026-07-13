@@ -1,6 +1,7 @@
 #Main
 .env
 deploy.conf
+backup.conf
 
 # Python
 backend/venv/
