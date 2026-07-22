@@ -5,6 +5,12 @@
 # PROJECT_DIR
 ###
 
+LIGHT_DEPLOY=false
+
+if [ "$1" = "--light" ]; then
+    LIGHT_DEPLOY=true
+fi
+
 CONFIG_FILE="deploy.conf"
 
 echo "Checking deploy.conf file"
@@ -41,12 +47,16 @@ else
     exit 1
 fi
 
-echo "Rebuilding containers"
-if docker compose build --no-cache; then
-    echo "Containers built successfully"
+if [ "$LIGHT_DEPLOY" = false ]; then
+    echo "Rebuilding containers"
+    if docker compose build --no-cache; then
+        echo "Containers built successfully"
+    else
+        echo "Error rebuilding container, exiting"
+        exit 1
+    fi
 else
-    echo "Error rebuilding container, exiting"
-    exit 1
+    echo "Light deploy: skipping build"
 fi
 
 
