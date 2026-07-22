@@ -34,20 +34,24 @@ if ! cd "$PROJECT_DIR"; then
 fi
 
 echo "Checking CI status on GitHub"
-if command -v gh &>/dev/null; then
-    CI_STATUS=$(gh run list --branch main --limit 1 --json conclusion --jq '.[0].conclusion')
-    if [ -z "$CI_STATUS" ]; then
-        echo "Warning: could not determine CI status, skipping check"
-    elif [ "$CI_STATUS" = "success" ]; then
-        echo "CI passed"
-    elif [ "$CI_STATUS" = "null" ]; then
-        echo "CI still running, skipping check"
-    else
-        echo "CI check failed (status: $CI_STATUS), aborting deploy"
-        exit 1
-    fi
+if ! command -v gh &>/dev/null; then
+    echo "Error: gh not installed. Install it to verify CI before deploy."
+    exit 1
+fi
+
+CI_STATUS=$(gh run list --branch main --limit 1 --json conclusion --jq '.[0].conclusion')
+
+if [ "$CI_STATUS" = "success" ]; then
+    echo "CI passed"
+elif [ "$CI_STATUS" = "null" ]; then
+    echo "Error: CI still running. Wait for it to finish before deploying."
+    exit 1
+elif [ -z "$CI_STATUS" ]; then
+    echo "Error: could not determine CI status (gh not authenticated or no workflow found)."
+    exit 1
 else
-    echo "gh not installed, skipping CI check"
+    echo "Error: CI check failed (status: $CI_STATUS). Fix it before deploying."
+    exit 1
 fi
 
 echo "Stopping docker container"
