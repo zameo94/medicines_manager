@@ -195,7 +195,7 @@ def test_create_invalid_schedule(client):
         }
     )
     
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 def test_create_schedule_end_date_before_start_date(client):
     med = client.post("/medicines/", json={"name": "Invalid End Date"}).json()
@@ -209,7 +209,7 @@ def test_create_schedule_end_date_before_start_date(client):
         }
     )
     
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_create_schedule_db_error(client, mocker):

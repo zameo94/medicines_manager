@@ -12,7 +12,7 @@
 
 CONFIG_FILE="backup.conf"
 
-echo "Chekcing deploy.conf file"
+echo "Checking backup.conf file"
 
 cd "$(dirname "$0")"
 
@@ -28,7 +28,7 @@ TIMESTAMP=$(date +%Y-%m-%d_%H%M%S)
 CONTAINER_PATH="/tmp/medicines_backup.sql"
 HOST_PATH="$BACKUP_DIR/backup_${TIMESTAMP}.sql"
 
-echo "Chekcing .env file"
+echo "Checking .env file"
 
 if [ -f "$ENV_PATH" ]; then
     export $(grep -v '^#' "$ENV_PATH" | xargs)
@@ -45,7 +45,7 @@ if [ ! -d "$BACKUP_DIR" ]; then
     mkdir $BACKUP_DIR
 fi
 
-echo "Chekcing if Postgre is running"
+echo "Checking if Postgre is running"
 
 if docker exec medicines_db pg_isready -U "$DB_USER" > /dev/null 2>&1; then
     echo "Postgre's up"
@@ -54,7 +54,7 @@ else
     exit 1
 fi
 
-echo "Chekcing if DB exists"
+echo "Checking if DB exists"
 
 CHECK_COMMAND="SELECT 1 FROM pg_database WHERE datname='"$DB_NAME"';"
 RESULT=$(PGPASSWORD="$DB_PASSWORD" psql -h localhost -U "$DB_USER" -d postgres -tAc "$CHECK_COMMAND")

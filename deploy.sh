@@ -7,7 +7,7 @@
 
 CONFIG_FILE="deploy.conf"
 
-echo "Chekcing deploy.conf file"
+echo "Checking deploy.conf file"
 
 if [ -f "$CONFIG_FILE" ]; then
     source "$CONFIG_FILE"
@@ -27,7 +27,7 @@ fi
 
 echo "Stopping docker container"
 if docker compose down; then
-    echo "Containers stopped sucessfully"
+    echo "Containers stopped successfully"
 else
     echo "Error stopping container, exiting"
     exit 1
@@ -35,7 +35,7 @@ fi
 
 echo "Updating code from Github"
 if git checkout main && git pull; then
-    echo "Code updated sucessfully"
+    echo "Code updated successfully"
 else
     echo "Error updating the code, exiting"
     exit 1
@@ -43,16 +43,16 @@ fi
 
 echo "Rebuilding containers"
 if docker compose build --no-cache; then
-    echo "Containers builded sucessfully"
+    echo "Containers built successfully"
 else
     echo "Error rebuilding container, exiting"
     exit 1
 fi
 
 
-echo "Starting container in demon mode"
+echo "Starting container in daemon mode"
 if docker compose up -d; then
-    echo "Deploy completd!"
+    echo "Deploy completed!"
     docker ps
 else
     echo "Error starting container, exiting"
