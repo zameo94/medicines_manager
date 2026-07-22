@@ -3,6 +3,8 @@
 ## ⚠️ Permission required
 Before making any code change, adding a file, or running any command, **ask for explicit permission first** and show a `git diff`-style preview of what you intend to add/remove. Do not act without approval. This project is in a cautious phase — prefer showing over doing.
 
+When in doubt, ask. Never guess intent. A question you didn't ask is a mistake you made.
+
 ## Project structure
 ```
 backend/          FastAPI + SQLModel + Alembic (entry: app.main:app)
@@ -52,5 +54,6 @@ docker-compose.dev.yml Dev override: hot-reload frontend, exposes :8000
 ## Gotchas
 - `.env` files contain real Telegram tokens — never commit them (already in `.gitignore`).
 - `backend/test` is an empty file (placeholder, not a test directory).
-- No pre-commit hooks or CI workflows configured.
+- CI workflow is configured — always check CI status before merging.
+- No pre-commit hooks configured.
 - `deploy.sh` runs `docker compose build --no-cache` — slow, intentional for production.

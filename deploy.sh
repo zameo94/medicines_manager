@@ -41,6 +41,18 @@ else
     exit 1
 fi
 
+echo "Checking CI status on GitHub"
+if command -v gh &>/dev/null; then
+    CI_STATUS=$(gh run list --branch main --limit 1 --json conclusion --jq '.[0].conclusion' 2>/dev/null)
+    if [ "$CI_STATUS" != "success" ]; then
+        echo "CI check failed (status: $CI_STATUS), aborting deploy"
+        exit 1
+    fi
+    echo "CI passed"
+else
+    echo "gh not installed, skipping CI check"
+fi
+
 echo "Updating code from Github"
 if git checkout main && git pull; then
     echo "Code updated successfully"
