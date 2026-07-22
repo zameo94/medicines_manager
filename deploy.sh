@@ -39,24 +39,27 @@ if ! command -v gh &>/dev/null; then
     exit 1
 fi
 
-REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner 2>&1) || {
-    echo "Error: $REPO"
-    exit 1
-}
-
 LATEST_COMMIT=$(git ls-remote origin main | cut -f1)
-CI_STATUS=$(gh api "repos/$REPO/commits/$LATEST_COMMIT/status" --jq '.state')
 
-if [ "$CI_STATUS" = "success" ]; then
-    echo "CI passed"
-elif [ "$CI_STATUS" = "pending" ]; then
+RUN_INFO=$(gh run list --branch main --limit 1 --json headSha,conclusion,status --jq '.[0] | "\(.headSha)|\(.conclusion)|\(.status)"')
+RUN_SHA=$(echo "$RUN_INFO" | cut -d'|' -f1)
+RUN_CONCLUSION=$(echo "$RUN_INFO" | cut -d'|' -f2)
+RUN_STATUS=$(echo "$RUN_INFO" | cut -d'|' -f3)
+
+if [ "$RUN_SHA" != "$LATEST_COMMIT" ]; then
+    echo "Error: no CI run found for latest commit ($LATEST_COMMIT)."
+    exit 1
+fi
+
+if [ "$RUN_STATUS" != "completed" ]; then
     echo "Error: CI still running. Wait for it to finish before deploying."
     exit 1
-elif [ -z "$CI_STATUS" ] || [ "$CI_STATUS" = "null" ]; then
-    echo "Error: could not determine CI status (no workflow found for latest commit)."
-    exit 1
+fi
+
+if [ "$RUN_CONCLUSION" = "success" ]; then
+    echo "CI passed"
 else
-    echo "Error: CI check failed (status: $CI_STATUS). Fix it before deploying."
+    echo "Error: CI failed (conclusion: $RUN_CONCLUSION). Fix it before deploying."
     exit 1
 fi
 
