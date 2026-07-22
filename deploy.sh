@@ -39,15 +39,21 @@ if ! command -v gh &>/dev/null; then
     exit 1
 fi
 
-CI_STATUS=$(gh run list --branch main --limit 1 --json conclusion --jq '.[0].conclusion')
+REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner 2>&1) || {
+    echo "Error: $REPO"
+    exit 1
+}
+
+LATEST_COMMIT=$(git ls-remote origin main | cut -f1)
+CI_STATUS=$(gh api "repos/$REPO/commits/$LATEST_COMMIT/status" --jq '.state')
 
 if [ "$CI_STATUS" = "success" ]; then
     echo "CI passed"
-elif [ "$CI_STATUS" = "null" ]; then
+elif [ "$CI_STATUS" = "pending" ]; then
     echo "Error: CI still running. Wait for it to finish before deploying."
     exit 1
-elif [ -z "$CI_STATUS" ]; then
-    echo "Error: could not determine CI status (gh not authenticated or no workflow found)."
+elif [ -z "$CI_STATUS" ] || [ "$CI_STATUS" = "null" ]; then
+    echo "Error: could not determine CI status (no workflow found for latest commit)."
     exit 1
 else
     echo "Error: CI check failed (status: $CI_STATUS). Fix it before deploying."
