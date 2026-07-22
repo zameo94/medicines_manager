@@ -11,6 +11,8 @@ if [ "$1" = "--light" ]; then
     LIGHT_DEPLOY=true
 fi
 
+DEPLOY_START=$(date +%s)
+
 CONFIG_FILE="deploy.conf"
 
 echo "Checking deploy.conf file"
@@ -62,7 +64,12 @@ fi
 
 echo "Starting container in daemon mode"
 if docker compose up -d; then
-    echo "Deploy completed!"
+    DEPLOY_END=$(date +%s)
+    DURATION=$((DEPLOY_END - DEPLOY_START))
+    H=$((DURATION / 3600))
+    M=$(( (DURATION % 3600) / 60 ))
+    S=$((DURATION % 60))
+    echo "Deploy completed in ${H}h ${M}m ${S}s"
     docker ps
 else
     echo "Error starting container, exiting"
