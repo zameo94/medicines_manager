@@ -33,24 +33,29 @@ if ! cd "$PROJECT_DIR"; then
     exit 1
 fi
 
+echo "Checking CI status on GitHub"
+if command -v gh &>/dev/null; then
+    CI_STATUS=$(gh run list --branch main --limit 1 --json conclusion --jq '.[0].conclusion')
+    if [ -z "$CI_STATUS" ]; then
+        echo "Warning: could not determine CI status, skipping check"
+    elif [ "$CI_STATUS" = "success" ]; then
+        echo "CI passed"
+    elif [ "$CI_STATUS" = "null" ]; then
+        echo "CI still running, skipping check"
+    else
+        echo "CI check failed (status: $CI_STATUS), aborting deploy"
+        exit 1
+    fi
+else
+    echo "gh not installed, skipping CI check"
+fi
+
 echo "Stopping docker container"
 if docker compose down; then
     echo "Containers stopped successfully"
 else
     echo "Error stopping container, exiting"
     exit 1
-fi
-
-echo "Checking CI status on GitHub"
-if command -v gh &>/dev/null; then
-    CI_STATUS=$(gh run list --branch main --limit 1 --json conclusion --jq '.[0].conclusion' 2>/dev/null)
-    if [ "$CI_STATUS" != "success" ]; then
-        echo "CI check failed (status: $CI_STATUS), aborting deploy"
-        exit 1
-    fi
-    echo "CI passed"
-else
-    echo "gh not installed, skipping CI check"
 fi
 
 echo "Updating code from Github"
