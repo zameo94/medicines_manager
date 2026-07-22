@@ -162,3 +162,59 @@ def test_monthly_schedule_last_day_overflow():
         start_date=start_date_leap
     )
     assert is_scheduled_for_today(schedule_leap, date(2024, 2, 29)) is True
+
+def test_daily_schedule_end_date_before_today():
+    schedule = MedicationSchedule(
+        scheduled_time="08:00:00",
+        medicine_id=1,
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 4, 1)
+    )
+    
+    assert is_scheduled_for_today(schedule, date(2026, 5, 1)) is False
+
+def test_daily_schedule_end_date_is_today():
+    schedule = MedicationSchedule(
+        scheduled_time="08:00:00",
+        medicine_id=1,
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 5, 1)
+    )
+    
+    assert is_scheduled_for_today(schedule, date(2026, 5, 1)) is True
+
+def test_daily_schedule_end_date_after_today():
+    schedule = MedicationSchedule(
+        scheduled_time="08:00:00",
+        medicine_id=1,
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 6, 1)
+    )
+    
+    assert is_scheduled_for_today(schedule, date(2026, 5, 1)) is True
+
+def test_weekly_schedule_end_date_before_today():
+    schedule = MedicationSchedule(
+        scheduled_time="08:00:00",
+        medicine_id=1,
+        frequency='WEEKLY',
+        interval=1,
+        days_of_week=[0],
+        start_date=date(2026, 1, 5),
+        end_date=date(2026, 4, 27)
+    )
+    
+    assert is_scheduled_for_today(schedule, date(2026, 5, 4)) is False
+
+def test_monthly_schedule_end_date_before_today():
+    schedule = MedicationSchedule(
+        scheduled_time="08:00:00",
+        medicine_id=1,
+        frequency='MONTHLY',
+        interval=1,
+        day_of_month=15,
+        start_date=date(2026, 1, 15),
+        end_date=date(2026, 4, 15)
+    )
+    
+    assert is_scheduled_for_today(schedule, date(2026, 5, 15)) is False

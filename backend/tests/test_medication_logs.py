@@ -35,6 +35,42 @@ def test_get_dashboard(client, session):
     assert data["schedules"][0]["current_log"] is None
     assert "is_late" in data["schedules"][0]
 
+def test_dashboard_excludes_expired_schedule(client, session):
+    medicine = Medicine(name="Expired Med", is_active=True)
+    session.add(medicine)
+    session.commit()
+
+    expired = MedicationSchedule(
+        medicine_id=medicine.id,
+        scheduled_time=time(8, 0),
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 4, 1)
+    )
+    session.add(expired)
+    session.commit()
+
+    response = client.get("/medication-logs/")
+    schedule_ids = [s["id"] for s in response.json()["schedules"]]
+    assert expired.id not in schedule_ids
+
+def test_dashboard_includes_schedule_on_end_date(client, session):
+    medicine = Medicine(name="Ending Today Med", is_active=True)
+    session.add(medicine)
+    session.commit()
+
+    ending_today = MedicationSchedule(
+        medicine_id=medicine.id,
+        scheduled_time=time(8, 0),
+        start_date=date(2026, 1, 1),
+        end_date=date.today()
+    )
+    session.add(ending_today)
+    session.commit()
+
+    response = client.get("/medication-logs/")
+    schedule_ids = [s["id"] for s in response.json()["schedules"]]
+    assert ending_today.id in schedule_ids
+
 def test_is_late_calculation(client, session, mocker):
     mock_now = mocker.patch("app.api.v1.medication_logs.datetime")
     

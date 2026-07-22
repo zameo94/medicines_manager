@@ -26,6 +26,22 @@ def test_create_medication_schedule(client):
     assert data["medicine_id"] == medicine_id
 
 
+def test_create_schedule_with_end_date(client):
+    med = client.post("/medicines/", json={"name": "End Date Med"}).json()
+    response = client.post(
+        "/medication-schedules/",
+        json={
+            "scheduled_time": "08:00:00",
+            "medicine_id": med["id"],
+            "start_date": "2026-01-01",
+            "end_date": "2026-06-15"
+        }
+    )
+    data = response.json()
+
+    assert response.status_code == status.HTTP_201_CREATED
+    assert data["end_date"] == "2026-06-15"
+
 def test_index_medication_schedules(client):
     med_res = client.post(
         "/medicines/",
@@ -82,6 +98,27 @@ def test_read_medication_schedule(client):
     assert data["scheduled_time"] == "12:00:00"
     assert data["medicine"]["name"] == "Read Med"
 
+
+def test_update_schedule_end_date(client):
+    med = client.post("/medicines/", json={"name": "Update End Date"}).json()
+    created = client.post(
+        "/medication-schedules/",
+        json={
+            "scheduled_time": "08:00:00",
+            "medicine_id": med["id"]
+        }
+    ).json()
+
+    response = client.put(
+        f"/medication-schedules/{created['id']}",
+        json={
+            "end_date": "2026-12-31"
+        }
+    )
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert data["end_date"] == "2026-12-31"
 
 def test_update_medication_schedule(client):
     med1 = client.post(
@@ -155,6 +192,20 @@ def test_create_invalid_schedule(client):
         "/medication-schedules/",
         json={
             "scheduled_time": "08:00:00"
+        }
+    )
+    
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+def test_create_schedule_end_date_before_start_date(client):
+    med = client.post("/medicines/", json={"name": "Invalid End Date"}).json()
+    response = client.post(
+        "/medication-schedules/",
+        json={
+            "scheduled_time": "08:00:00",
+            "medicine_id": med["id"],
+            "start_date": "2026-06-01",
+            "end_date": "2026-05-01"
         }
     )
     
