@@ -5,7 +5,7 @@ from sqlalchemy import func
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from app.database import get_session
+from app.database import get_session, IS_DEVELOPMENT
 from app.models.medicine import Medicine
 from app.models.medication_schedule import MedicationSchedule
 from app.api.v1 import medicines
@@ -13,8 +13,6 @@ from app.api.v1 import medication_schedules
 from app.api.v1 import medication_logs
 
 load_dotenv()
-
-IS_DEVELOPMENT = os.getenv("DEVELOPMENT", "False").lower() == "true"
 
 app = FastAPI(
     title="Medicines Manager API",
@@ -28,7 +26,6 @@ if IS_DEVELOPMENT:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
-        allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )

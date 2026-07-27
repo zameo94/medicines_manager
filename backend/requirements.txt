@@ -7,9 +7,9 @@ sqlmodel
 psycopg2-binary
 alembic
 
-# Security & Authentication
-python-jose[cryptography]
-passlib[bcrypt]
+# Security (unused — reserved for future multi-user auth)
+# python-jose[cryptography]  # JWT token creation & verification
+# passlib[bcrypt]            # Password hashing
 
 # Utility
 python-dotenv
