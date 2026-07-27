@@ -58,7 +58,7 @@ export const ScheduleItem = ({ schedule, onUpdate, onDelete, isSaving = false, i
       };
       await onUpdate(schedule.id, finalData);
       setIsEditing(false);
-    } catch (err) {
+    } catch {
       // Error handled in superior page
     }
   };

@@ -1,7 +1,7 @@
 from datetime import datetime, date
 from typing import List, Optional, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
-from .medication_schedule import MedicationScheduleRead
+from .medication_schedule import MedicationScheduleResponse
 
 class MedicationLogBase(SQLModel):
     reference_date: date = Field(index=True)
@@ -18,9 +18,9 @@ class MedicationLogUpdate(MedicationLogBase):
 
 class MedicationLogRead(MedicationLogBase):
     id: int
-    schedule: MedicationScheduleRead
+    schedule: MedicationScheduleResponse
 
-class MedicationScheduleWithLog(MedicationScheduleRead):
+class MedicationScheduleWithLog(MedicationScheduleResponse):
     current_log: Optional[MedicationLogRead] = None
     is_late: bool = False
 

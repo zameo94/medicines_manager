@@ -23,20 +23,15 @@ export default function ScheduleDetailPage() {
   );
 
   const handleSave = async (data) => {
-    try {
-      await update(data);
-      navigate(`/medication-schedules/${id}`, { replace: true });
-    } catch (err) {
-      // Handled by hook
-      throw err;
-    }
+    await update(data);
+    navigate(`/medication-schedules/${id}`, { replace: true });
   };
 
   const handleDelete = async () => {
     try {
       await remove();
       navigate('/medication-schedules', { replace: true });
-    } catch (err) {
+    } catch {
       // Handled by hook
     }
   };

@@ -4,6 +4,7 @@ export const LogItem = ({ schedule, onToggle, isSaving = false }) => {
   const [isChecked, setIsChecked] = useState(schedule.current_log?.is_taken || false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsChecked(schedule.current_log?.is_taken || false);
   }, [schedule.current_log]);
 
@@ -12,7 +13,7 @@ export const LogItem = ({ schedule, onToggle, isSaving = false }) => {
     setIsChecked(newValue);
     try {
       await onToggle(schedule, newValue);
-    } catch (err) {
+    } catch {
       setIsChecked(!newValue);
     }
   };

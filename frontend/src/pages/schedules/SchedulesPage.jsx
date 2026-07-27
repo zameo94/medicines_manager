@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useMedicationSchedules } from '../../features/medication_schedules/hooks/useMedicationSchedules';
 import { ScheduleItem } from '../../features/medication_schedules/components/ScheduleItem';
 import { ScheduleModal } from '../../features/medication_schedules/components/ScheduleModal';

@@ -3,17 +3,17 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 from app.database import get_session
 from app.models.medication_schedule import MedicationSchedule
-from app.schemas.medication_schedule import MedicationScheduleCreate, MedicationScheduleUpdate, MedicationScheduleRead
+from app.schemas.medication_schedule import MedicationScheduleCreate, MedicationScheduleUpdate, MedicationScheduleResponse
 
 router = APIRouter()
 
-@router.get("/", response_model=List[MedicationScheduleRead])
+@router.get("/", response_model=List[MedicationScheduleResponse])
 def index_medication_schedule(session: Session = Depends(get_session)):
     medication_schedules = session.exec(select(MedicationSchedule)).all()
     return medication_schedules
 
-@router.get("/{medication_schedule_id}", response_model=MedicationScheduleRead)
-def show_medicine(medication_schedule_id: int, session: Session = Depends(get_session)):
+@router.get("/{medication_schedule_id}", response_model=MedicationScheduleResponse)
+def show_medication_schedule(medication_schedule_id: int, session: Session = Depends(get_session)):
     medication_schedule = session.get(MedicationSchedule, medication_schedule_id)
     if not medication_schedule:
         raise HTTPException(
@@ -22,7 +22,7 @@ def show_medicine(medication_schedule_id: int, session: Session = Depends(get_se
         )
     return medication_schedule
 
-@router.post("/", response_model=MedicationSchedule, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=MedicationScheduleResponse, status_code=status.HTTP_201_CREATED)
 def create_medication_schedule(medication_schedule_data: MedicationScheduleCreate, session: Session = Depends(get_session)):
     try:
         db_medication_schedule = MedicationSchedule.model_validate(medication_schedule_data)
@@ -37,8 +37,8 @@ def create_medication_schedule(medication_schedule_data: MedicationScheduleCreat
             detail=f"Error while saving: {e}"
         )
 
-@router.put("/{medication_schedule_id}", response_model=MedicationScheduleRead)
-def update_medicine(medication_schedule_id: int, medicine_data: MedicationScheduleUpdate, session: Session = Depends(get_session)):
+@router.put("/{medication_schedule_id}", response_model=MedicationScheduleResponse)
+def update_medication_schedule(medication_schedule_id: int, schedule_data: MedicationScheduleUpdate, session: Session = Depends(get_session)):
     db_medication_schedule = session.get(MedicationSchedule, medication_schedule_id)
     
     if not db_medication_schedule:
@@ -48,7 +48,7 @@ def update_medicine(medication_schedule_id: int, medicine_data: MedicationSchedu
         )
     
     try:
-        update_dict = medicine_data.model_dump(exclude_unset=True)
+        update_dict = schedule_data.model_dump(exclude_unset=True)
         for key, value in update_dict.items():
             setattr(db_medication_schedule, key, value)
 
@@ -64,7 +64,7 @@ def update_medicine(medication_schedule_id: int, medicine_data: MedicationSchedu
         )
 
 @router.delete("/{medication_schedule_id}")
-def delete_medicine(medication_schedule_id: int, session: Session = Depends(get_session)):
+def delete_medication_schedule(medication_schedule_id: int, session: Session = Depends(get_session)):
     medication_schedule = session.get(MedicationSchedule, medication_schedule_id)
     
     if not medication_schedule:

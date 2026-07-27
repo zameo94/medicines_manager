@@ -40,6 +40,7 @@ export const useMedicationSchedules = () => {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
   }, [refresh]);
 
@@ -103,6 +104,7 @@ export const useMedicationSchedule = (id) => {
   }, [id]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchSchedule();
   }, [fetchSchedule]);
 
