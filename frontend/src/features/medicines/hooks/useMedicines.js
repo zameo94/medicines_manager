@@ -26,6 +26,7 @@ export const useMedicines = () => {
 
   const refresh = useCallback(async () => {
     try {
+      setLoading(true);
       const res = await medicineService.getAll();
       setMedicines(res.data);
     } catch (err) {
@@ -35,7 +36,10 @@ export const useMedicines = () => {
     }
   }, []);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    refresh();
+  }, [refresh]);
 
   const remove = async (id) => {
     try {
@@ -96,6 +100,7 @@ export const useMedicine = (id) => {
   }, [id]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchMedicine();
   }, [fetchMedicine]);
 

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useMedicines } from '../../features/medicines/hooks/useMedicines';
 import { MedicineItem } from '../../features/medicines/components/MedicineItem';
 import { MedicineModal } from '../../features/medicines/components/MedicineModal';

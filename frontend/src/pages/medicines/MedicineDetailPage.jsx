@@ -22,20 +22,15 @@ export default function MedicineDetailPage() {
   );
 
   const handleSave = async (data) => {
-    try {
-      await update(data);
-      navigate(`/medicines/${id}`, { replace: true });
-    } catch (err) {
-      // Error handled through hook
-      throw err;
-    }
+    await update(data);
+    navigate(`/medicines/${id}`, { replace: true });
   };
 
   const handleDelete = async () => {
     try {
       await remove();
       navigate('/medicines', { replace: true });
-    } catch (err) {
+    } catch {
       // Error handled through hook
     }
   };

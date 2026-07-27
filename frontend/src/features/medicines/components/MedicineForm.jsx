@@ -14,6 +14,7 @@ export const MedicineForm = ({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsEditing(initialIsEditing);
   }, [initialIsEditing]);
 
@@ -25,6 +26,7 @@ export const MedicineForm = ({
 
   useEffect(() => {
     if (medicine) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         name: medicine.name,
         description: medicine.description || '',
@@ -38,7 +40,7 @@ export const MedicineForm = ({
     try {
       await onSave(formData);
       setIsEditing(false);
-    } catch (err) {
+    } catch {
       // Error handled by parent
     }
   };

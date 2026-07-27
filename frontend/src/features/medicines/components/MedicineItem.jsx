@@ -23,7 +23,7 @@ export const MedicineItem = ({ medicine, onUpdate, onDelete, isSaving = false, i
     try {
       await onUpdate(medicine.id, editData);
       setIsEditing(false);
-    } catch (err) {
+    } catch {
       // Error handled in the superior page
     }
   };

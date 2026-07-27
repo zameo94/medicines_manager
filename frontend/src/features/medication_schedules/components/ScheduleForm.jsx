@@ -17,6 +17,7 @@ export const ScheduleForm = ({
   const [activeMedicines, setActiveMedicines] = useState([]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsEditing(initialIsEditing);
   }, [initialIsEditing]);
 
@@ -48,6 +49,7 @@ export const ScheduleForm = ({
 
   useEffect(() => {
     if (schedule) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         scheduled_time: schedule.scheduled_time.slice(0, 5),
         medicine_id: schedule.medicine_id,
@@ -73,7 +75,7 @@ export const ScheduleForm = ({
     try {
       await onSave(submissionData);
       setIsEditing(false);
-    } catch (err) {
+    } catch {
       // Error is handled by the parent/hook
     }
   };

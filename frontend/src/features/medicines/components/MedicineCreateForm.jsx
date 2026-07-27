@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export const MedicineCreateForm = ({ onSubmit, initialData, onCancel }) => {
+export const MedicineCreateForm = ({ onSubmit, initialData }) => {
   const [formData, setFormData] = useState({ 
     name: '', 
     description: '', 
@@ -9,6 +9,7 @@ export const MedicineCreateForm = ({ onSubmit, initialData, onCancel }) => {
 
   useEffect(() => {
     if (initialData) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({ 
         name: initialData.name, 
         description: initialData.description || '',

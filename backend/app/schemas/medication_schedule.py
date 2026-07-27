@@ -89,6 +89,6 @@ class MedicationScheduleUpdate(MedicationScheduleBase):
     scheduled_time: Optional[time] = None
     medicine_id: Optional[int] = None
 
-class MedicationScheduleRead(MedicationScheduleBase):
+class MedicationScheduleResponse(MedicationScheduleBase):
     id: int
     medicine: MedicineRead
